@@ -1,7 +1,16 @@
 language: node_js
 node_js:
-  - 0.10
-   
+- '0.8'
+- '0.10'
+before_script:
+- npm install -g grunt-cli
 notifications:
   email:
-    - i@ssen.name
+  - i@ssen.name
+deploy:
+  provider: npm
+  email: i@ssen.name
+  api_key:
+    secure: AqGnqBbYLp+gZ/FINFWP+KLwuZISf37qAhU99nn+ZlW25FZbi0DQoI5C0AqV7zxDaDteHohTPpF741KKW28qMu+fWcYLHVwQzIsFxsXjSttMpzuyhFGDNHrEsKOKyELcU1N6OUEOOzPVL9vuQZW0EWsvlOIBIPCfEb1ZAu3H6bo=
+  on:
+    branch: master
