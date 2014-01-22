@@ -1,0 +1,23 @@
+# ide
+.idea
+
+# git
+.git
+.gitignore
+
+# coffee
+libs/*.coffee
+
+# grunt
+Gruntfile.*
+
+# npm
+node_modules
+npm-debug.log
+.npmignore
+
+# test
+test
+
+# travis
+.travis.yml

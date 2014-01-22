@@ -1,0 +1,2 @@
+class Fldoc
+	constructor: (@build) ->
