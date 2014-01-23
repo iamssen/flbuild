@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:HGroup xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" gap="10">
+	<fx:Metadata>
+		[Event(name="submit", type="mailer.views.EmailFormEvent")]
+	</fx:Metadata>
+
+	<fx:Script>
+		<![CDATA[
+			import mailer.models.Email;
+
+			private function submit(event:Event):void {
+				if (name_str.text == "" || email_str.text == "") {
+					return;
+				}
+
+				var email:Email=new Email;
+				email.name=name_str.text;
+				email.email=email_str.text;
+
+				dispatchEvent(new EmailFormEvent(EmailFormEvent.SUBMIT, email));
+
+				name_str.text="";
+				email_str.text="";
+
+				name_str.setFocus();
+			}
+		]]>
+	</fx:Script>
+
+	<s:TextInput id="name_str" width="100%" enter="submit(event)"/>
+	<s:TextInput id="email_str" width="100%" enter="submit(event)"/>
+	<s:Button label="Submit" click="submit(event)"/>
+</s:HGroup>

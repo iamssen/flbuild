@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "flasset.js",
+  "sourceRoot": "",
+  "sources": [
+    "flasset.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA;CAAA;CAAA"
+}

@@ -1,0 +1,17 @@
+# ide
+.idea
+
+# generated files
+test/**/*.js
+test/**/*.map
+Gruntfile.js
+Gruntfile.map
+
+# npm
+node_modules
+npm-debug.log
+
+# test result files
+test/project/**/*.swf
+test/project/**/*.swc
+test/project/**/*.xml
