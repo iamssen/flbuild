@@ -15,9 +15,9 @@
 
   Flbuild = (function() {
     function Flbuild() {
-      this.createModuleMaker = __bind(this.createModuleMaker, this);
-      this.createApplicationMaker = __bind(this.createApplicationMaker, this);
-      this.createLibraryMaker = __bind(this.createLibraryMaker, this);
+      this.getModuleCreator = __bind(this.getModuleCreator, this);
+      this.getApplicationCreator = __bind(this.getApplicationCreator, this);
+      this.getLibraryCreator = __bind(this.getLibraryCreator, this);
       this.resolvePaths = __bind(this.resolvePaths, this);
       this.resolvePath = __bind(this.resolvePath, this);
       this.getEnv = __bind(this.getEnv, this);
@@ -31,11 +31,7 @@
       this.addSourceDirectory = __bind(this.addSourceDirectory, this);
       this.addExternalLibraryDirectory = __bind(this.addExternalLibraryDirectory, this);
       this.addLibraryDirectory = __bind(this.addLibraryDirectory, this);
-      var _base;
       this.envs = {};
-      if ((_base = this.envs)['FLEX_HOME'] == null) {
-        _base['FLEX_HOME'] = process.env['FLEX_HOME'];
-      }
       this.libraryDirectories = [];
       this.externalLibraryDirectories = [];
       this.sourceDirectories = [];
@@ -75,6 +71,9 @@
     };
 
     Flbuild.prototype.setEnv = function(name, value) {
+      if (value == null) {
+        value = process.env[name];
+      }
       return this.envs[name] = value;
     };
 
@@ -108,15 +107,15 @@
       return newPaths;
     };
 
-    Flbuild.prototype.createLibraryMaker = function() {
+    Flbuild.prototype.getLibraryCreator = function() {
       return new Fllib(this);
     };
 
-    Flbuild.prototype.createApplicationMaker = function() {
+    Flbuild.prototype.getApplicationCreator = function() {
       return new Flapp(this);
     };
 
-    Flbuild.prototype.createModuleMaker = function() {
+    Flbuild.prototype.getModuleCreator = function() {
       return new Flmodule(this);
     };
 

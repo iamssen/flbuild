@@ -8,7 +8,6 @@ Flmodule = require('./flmodule')
 class Flbuild
 	constructor: () ->
 		@envs = {}
-		@envs['FLEX_HOME'] ?= process.env['FLEX_HOME']
 
 		@libraryDirectories = []
 		@externalLibraryDirectories = []
@@ -48,6 +47,7 @@ class Flbuild
 	# environment variables control
 	# ================================================================================
 	setEnv: (name, value) =>
+		value = process.env[name] if not value?
 		@envs[name] = value
 
 	applyEnv: (str) =>
@@ -75,11 +75,11 @@ class Flbuild
 	# ================================================================================
 	# create instance
 	# ================================================================================
-	createLibraryMaker: () => new Fllib(@)
+	getLibraryCreator: () => new Fllib(@)
 
-	createApplicationMaker: () => new Flapp(@)
+	getApplicationCreator: () => new Flapp(@)
 
-	createModuleMaker: () => new Flmodule(@)
+	getModuleCreator: () => new Flmodule(@)
 
 	# ================================================================================
 	# utils

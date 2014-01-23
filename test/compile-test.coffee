@@ -7,6 +7,7 @@ $fs = require('fs')
 Flbuild = require('../libs/flbuild')
 
 flbuild = new Flbuild
+flbuild.setEnv('FLEX_HOME')
 flbuild.setEnv('PROJECT_HOME', $path.join(__dirname, 'project'))
 flbuild.setEnv('PLAYER_VERSION', 11.9)
 flbuild.addExternalLibraryDirectory('$FLEX_HOME/frameworks/libs/player/$PLAYER_VERSION')
@@ -50,7 +51,7 @@ describe 'compile', ->
 
 	it 'should maked swc', (done) ->
 		@timeout(0)
-		fllib = flbuild.createLibraryMaker()
+		fllib = flbuild.getLibraryCreator()
 		fllib.setFilterFunction (file) -> file.class.indexOf('mailer.') is 0
 		fllib.createBuildCommand '$PROJECT_HOME/lib.swc', (cmd) ->
 			console.log('fllib :', cmd)
@@ -68,7 +69,7 @@ describe 'compile', ->
 				
 	it 'should maked swf, xml', (done) ->
 		@timeout(0)
-		flapp = flbuild.createApplicationMaker()
+		flapp = flbuild.getApplicationCreator()
 		flapp.createBuildCommand '$PROJECT_HOME/src/App.mxml', '$PROJECT_HOME/app.swf', (cmd) ->
 			console.log('flapp :', cmd)
 			if typeof(cmd) is 'string'
@@ -85,7 +86,7 @@ describe 'compile', ->
 				
 	it 'should maked module', (done) ->
 		@timeout(0)
-		flmodule = flbuild.createModuleMaker()
+		flmodule = flbuild.getModuleCreator()
 		flmodule.createBuildCommand '$PROJECT_HOME/app.xml', '$PROJECT_HOME/src/modules/Module.mxml', '$PROJECT_HOME/modules/Module.swf', (cmd) ->
 			console.log('flmodule :', cmd)
 			if typeof(cmd) is 'string'
