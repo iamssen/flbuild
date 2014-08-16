@@ -1,5 +1,6 @@
 $path = require('path')
 $fs = require('fs')
+parseXml = require('xml2js').parseString
 
 Fllib = require('./fllib')
 Flapp = require('./flapp')
@@ -58,6 +59,16 @@ class Flbuild
 
 	getEnv: (name) =>
 		@envs[name]
+
+	getSDKVersion: (done) =>
+		if not @sdkDescription
+			xmlstr = $fs.readFileSync(@getEnv('FLEX_HOME') + '/flex-sdk-description.xml', {encoding:'utf8'})
+			parseXml xmlstr, (err, result)->
+				@sdkDescription = result
+				done(@sdkDescription.version)
+		else
+			done(@sdkDescription.version)
+
 
 	# ================================================================================
 	# resolve path control : dependent environment variables control

@@ -1,5 +1,9 @@
 # ide
 .idea
+.settings
+.actionScriptProperties
+.flexLibProperties
+.project
 
 # generated files
 test/**/*.js
