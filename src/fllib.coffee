@@ -6,15 +6,13 @@ class Fllib
 		@collector = new SourceCollector(build)
 		@build = build
 
-	# ================================================================================
-	# options
-	# ================================================================================
-	# @param func function(file)
-	setFilterFunction: (func) => @filterFunction = func
+	#==========================================================================================
+	# setting
+	#==========================================================================================
+	# @param func `boolean function(file)`
+	setFilterFunction: (func) =>
+		@filterFunction = func
 
-	# ================================================================================
-	# implements
-	# ================================================================================
 	addLibraryDirectory: (path) =>
 		@collector.addLibraryDirectory(path)
 
@@ -27,13 +25,13 @@ class Fllib
 	addArg: (arg) =>
 		@collector.addArg(arg)
 
-	# ================================================================================
+	#==========================================================================================
 	# process
-	# ================================================================================
+	#==========================================================================================
 	createBuildCommand: (output, complete) =>
-		#------------------------------------
+		#----------------------------------------------------------------
 		# 0 get exec file
-		#------------------------------------
+		#----------------------------------------------------------------
 		bin = 'compc'
 
 		@build.getSDKVersion (version) =>
@@ -43,9 +41,9 @@ class Fllib
 				else
 					bin = 'compc.exe'
 
-			# ------------------------------------------------------------
-			# 1 : create path args
-			# ------------------------------------------------------------
+			#----------------------------------------------------------------
+			# 1 create path args
+			#----------------------------------------------------------------
 			args = []
 
 			args.push(@build.wrap(@build.getEnv('FLEX_HOME') + '/bin/' + bin))
@@ -59,15 +57,33 @@ class Fllib
 			for directory in @collector.getSourceDirectories()
 				args.push('-source-path ' + @build.wrap(directory))
 
-			# ------------------------------------------------------------
-			# 2 : create include classes args
-			# ------------------------------------------------------------
+			#----------------------------------------------------------------
+			# 2 create include classes args
+			#
+			# manifest.xml spec
+			# ------------------
+			#
+			# -namespace http://ssen.name/ns/ssen manifest.xml
+			# -include-namespace http://ssen.name/ns/ssen
+			#
+			# <componentPackage>
+			# 	<component id="Stripe" class="ssen.components.fills.Stripe"/>
+			# </componentPackage>
+			#
+			#
+			# manifest object
+			# ----------------
+			#
+			# - namespace['http://ssen.name/ns/ssen'][0] = 'ssen.components.fills.Stripe'
+			#
+			#
+			#----------------------------------------------------------------
 			@collector.getIncludeClasses @filterFunction, (classPaths) =>
 				args.push('-include-classes ' + classPaths.join(' '))
 
-				# ------------------------------------------------------------
-				# 3 : args, output
-				# ------------------------------------------------------------
+				#----------------------------------------------------------------
+				# 3 args, output
+				#----------------------------------------------------------------
 				for arg in @collector.getArgs()
 					args.push(@build.applyEnv(arg))
 

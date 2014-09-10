@@ -8,9 +8,9 @@ class SourceCollector
 		@sourceDirectories = []
 		@args = []
 
-	# ================================================================================
+	#==========================================================================================
 	# setters
-	# ================================================================================
+	#==========================================================================================
 	addLibraryDirectory: (path) =>
 		@libraryDirectories.push(path)
 
@@ -23,9 +23,9 @@ class SourceCollector
 	addArg: (arg) =>
 		@args.push(arg)
 
-	# ================================================================================
+	#==========================================================================================
 	# getters
-	# ================================================================================
+	#==========================================================================================
 	getLibraries: =>
 		libraryDirectories = @build.resolvePaths(@libraryDirectories.concat(@build.getLibraryDirectories()))
 		libraries = []
@@ -33,6 +33,7 @@ class SourceCollector
 			for directory in libraryDirectories
 				libraries = libraries.concat(@build.getSwcListFromDirectory(directory))
 		libraries
+
 
 	getExternalLibraries: =>
 		libraryDirectories = @build.resolvePaths(@externalLibraryDirectories.concat(@build.getExternalLibraryDirectories()))
@@ -42,8 +43,23 @@ class SourceCollector
 				libraries = libraries.concat(@build.getSwcListFromDirectory(directory))
 		libraries
 
+
 	getSourceDirectories: =>
 		@build.resolvePaths(@sourceDirectories.concat(@build.getSourceDirectories()))
+
+
+	getManifest: (callback) =>
+		sourceDirectories = @build.resolvePaths(@sourceDirectories.concat(@build.getSourceDirectories()))
+
+		pick sourceDirectories, ['.yaml'], (files) =>
+			# namespace['http://ssen.name/ns/ssen'][0] = 'ssen.components.fills.Stripe'
+			namespaces = {}
+
+			for file in files
+				console.log(file)
+
+			callback(namespaces)
+
 
 	getIncludeClasses: (filterFunction, callback) =>
 		sourceDirectories = @build.resolvePaths(@sourceDirectories.concat(@build.getSourceDirectories()))
@@ -62,6 +78,7 @@ class SourceCollector
 
 			callback(classPaths)
 
+			
 	getArgs: =>
 		@args.concat(@build.getArgs())
 
