@@ -5,6 +5,7 @@ parseXml = require('xml2js').parseString
 Fllib = require('./fllib')
 Flapp = require('./flapp')
 Flmodule = require('./flmodule')
+Flasset = require('./flasset')
 
 class Flbuild
 	constructor: () ->
@@ -91,6 +92,8 @@ class Flbuild
 	getApplicationCreator: () => new Flapp(@)
 
 	getModuleCreator: () => new Flmodule(@)
+
+	getAssetCreator: () => new Flasset(@)
 
 	#==========================================================================================
 	# utils

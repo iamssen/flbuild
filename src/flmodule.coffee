@@ -65,13 +65,15 @@ class Flmodule
 			output = @build.wrap(@build.resolvePath(output))
 			report = if report? and $fs.existsSync(@build.resolvePath(report)) then @build.wrap(@build.resolvePath(report)) else null
 
+			# size-report
+			args.push('-size-report ' + output.replace('.swf', '.size.xml'))
+
 			# swf
 			args.push('-output ' + output)
 
 			# report
 			args.push('-load-externs ' + report) if report?
 
-			if complete?
-				complete(args.join(' '))
+			complete(args.join(' ')) if complete?
 
 module.exports = Flmodule

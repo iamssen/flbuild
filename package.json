@@ -1,7 +1,7 @@
 {
   "name": "flbuild",
   "author": "SSen <i@ssen.name>",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Support build for adobe flash / flex",
   "tags": [
     "flash",
@@ -40,7 +40,6 @@
   },
   "devDependencies": {
     "coffee-script": "1.*",
-    "done-exec": "0.1.*",
     "gulp": "3.8.*",
     "gulp-coffee": "2.1.*",
     "gulp-mocha": "1.0.*",
@@ -50,7 +49,10 @@
     "source-map-support": "0.2.*"
   },
   "dependencies": {
+    "async": "0.9.*",
+    "done-exec": "0.1.*",
     "file-picker": "*",
+    "fs-extra": "0.11.*",
     "xml2js": "0.4.*"
   }
 }

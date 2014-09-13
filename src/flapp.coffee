@@ -66,10 +66,12 @@ class Flapp
 			# link-report
 			args.push('-link-report ' + output.replace('.swf', '.xml'))
 
+			# size-report
+			args.push('-size-report ' + output.replace('.swf', '.size.xml'))
+
 			# swf
 			args.push('-output ' + output)
 
-			if complete?
-				complete(args.join(' '))
+			complete(args.join(' ')) if complete?
 
 module.exports = Flapp
