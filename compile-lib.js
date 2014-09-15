@@ -13,11 +13,11 @@ flbuild.addLibraryDirectory('$FLEX_HOME/frameworks/libs/mx/')
 flbuild.addLibraryDirectory('$FLEX_HOME/frameworks/locale/en_US/')
 flbuild.addSourceDirectory('$PROJECT_HOME/src')
 
-var fllib = flbuild.getLibraryCreator()
-fllib.createBuildCommand('test/ttt.swc', function(command) {
-    console.log(command)
+// var fllib = flbuild.getLibraryCreator()
+// fllib.createBuildCommand('test/ttt.swc', function(command) {
+//     console.log(command)
     
-    exec(command).run(function() {
+//     exec(command).run(function() {
         var collector = new SourceCollector(flbuild)
         collector.getManifest(function(namespaces) {
             for (var namespace in namespaces) {
@@ -33,7 +33,7 @@ fllib.createBuildCommand('test/ttt.swc', function(command) {
                 }
             }
         })
-    })
+//     })
     
-})
+// })
 

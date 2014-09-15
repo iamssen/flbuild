@@ -67,6 +67,7 @@ class SourceCollector
 				# path: '/Users/.../ns/namespace.yaml'
 				# relative_path: 'ns/namespace.yaml'
 				# base: '/Usrs/.../ns'
+				# relative_base: 'ns'
 				# name: 'namespace'
 				# extension: '.yaml'
 				# atime
@@ -77,14 +78,16 @@ class SourceCollector
 				namespace = spec.namespace
 				components = spec.components
 				description = spec.description
+				base_namespace = file.relative_base.split('/').join('.')
 				
 				for component in components
-					paths = component.split('.')
+					component_path = base_namespace + '.' + component
+					component_path = component_path.substring(1) if component_path.indexOf('.') is 0
 					
 					namespaces[namespace] = [] if namespaces[namespace] is undefined
 					namespaces[namespace].push
-								name: paths[paths.length - 1]
-								path: component
+								name: component
+								path: component_path
 
 			callback(namespaces)
 
