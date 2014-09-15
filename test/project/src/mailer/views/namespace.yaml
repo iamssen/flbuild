@@ -1,0 +1,4 @@
+namespace: "http://ns.ssen.name/mailer"
+components:
+- mailer.views.EmailForm
+- mailer.views.EmailRenderer

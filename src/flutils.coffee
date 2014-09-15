@@ -1,4 +1,6 @@
 pick = require('file-picker').pick
+yaml = require('js-yaml')
+fs = require('fs')
 
 class SourceCollector
 	constructor: (build) ->
@@ -52,11 +54,37 @@ class SourceCollector
 		sourceDirectories = @build.resolvePaths(@sourceDirectories.concat(@build.getSourceDirectories()))
 
 		pick sourceDirectories, ['.yaml'], (files) =>
-			# namespace['http://ssen.name/ns/ssen'][0] = 'ssen.components.fills.Stripe'
+			# namespace['http://ssen.name/ns/ssen'][0] =
+			# 										name:'Stripe'
+			# 										path:'ssen.components.fills.Stripe'
 			namespaces = {}
 
 			for file in files
-				console.log(file)
+				if file.name isnt 'namespace'
+					continue
+				
+				# realpath: '/Users/.../ns/namespace.yaml'
+				# path: '/Users/.../ns/namespace.yaml'
+				# relative_path: 'ns/namespace.yaml'
+				# base: '/Usrs/.../ns'
+				# name: 'namespace'
+				# extension: '.yaml'
+				# atime
+				# mtime
+				# ctime
+				
+				spec = yaml.safeLoad(fs.readFileSync(file.realpath, 'utf8'))
+				namespace = spec.namespace
+				components = spec.components
+				description = spec.description
+				
+				for component in components
+					paths = component.split('.')
+					
+					namespaces[namespace] = [] if namespaces[namespace] is undefined
+					namespaces[namespace].push
+								name: paths[paths.length - 1]
+								path: component
 
 			callback(namespaces)
 

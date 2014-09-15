@@ -102,7 +102,7 @@ class Flbuild
 	
 	wrap: (path) ->
 		path = "\"#{path}\""
-		path.replace(/\//g, "\\") if isWindow()
+		path.replace(/\//g, "\\") if @isWindow()
 		return path
 
 	getSwcListFromDirectory: (path) ->

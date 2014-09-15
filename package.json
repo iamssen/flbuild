@@ -1,7 +1,7 @@
 {
   "name": "flbuild",
   "author": "SSen <i@ssen.name>",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Support build for adobe flash / flex",
   "tags": [
     "flash",
@@ -53,6 +53,7 @@
     "done-exec": "0.1.*",
     "file-picker": "*",
     "fs-extra": "0.11.*",
+    "js-yaml": "3.2.*",
     "xml2js": "0.4.*"
   }
 }

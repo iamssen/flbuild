@@ -1,3 +1,5 @@
+fs = require('fs')
+async = require('async')
 pick = require('file-picker').pick
 {SourceCollector} = require('./flutils')
 
@@ -59,37 +61,59 @@ class Fllib
 
 			#----------------------------------------------------------------
 			# 2 create include classes args
-			#
-			# manifest.xml spec
-			# ------------------
-			#
-			# -namespace http://ssen.name/ns/ssen manifest.xml
-			# -include-namespace http://ssen.name/ns/ssen
-			#
-			# <componentPackage>
-			# 	<component id="Stripe" class="ssen.components.fills.Stripe"/>
-			# </componentPackage>
-			#
-			#
-			# manifest object
-			# ----------------
-			#
-			# - namespace['http://ssen.name/ns/ssen'][0] = 'ssen.components.fills.Stripe'
-			#
-			#
 			#----------------------------------------------------------------
 			@collector.getIncludeClasses @filterFunction, (classPaths) =>
 				args.push('-include-classes ' + classPaths.join(' '))
 
 				#----------------------------------------------------------------
-				# 3 args, output
+				# 3 create manifest files
+				#
+				# manifest.xml spec
+				# ------------------
+				# -namespace http://ssen.name/ns/ssen manifest.xml
+				# -include-namespace http://ssen.name/ns/ssen
+				#
+				# <componentPackage>
+				# 	<component id="Stripe" class="ssen.components.fills.Stripe"/>
+				# </componentPackage>
+				#
+				# manifest object
+				# ----------------
+				# - namespace['http://ssen.name/ns/ssen'][0] = 
+				# 										name:'Stripe'
+				# 										path:'ssen.components.fills.Stripe'
 				#----------------------------------------------------------------
-				for arg in @collector.getArgs()
-					args.push(@build.applyEnv(arg))
+				@collector.getManifest (namespaces) =>
+				
+					manifestCount = 0
+					
+					for namespace, components of namespaces
+						# create manifest file source
+						manifestSource = '<?xml version="1.0" encoding="utf-8"?>\n'
+						manifestSource += '<componentPackage>\n'
+						for component in components
+							if classPaths.indexOf(component.path) > -1
+								manifestSource += "<component id='#{component.name}' class='#{component.path}'/>\n" 
+						manifestSource += '</componentPackage>'
+						
+						# write manifest file
+						manifestFile = "manifest#{manifestCount}.xml"
+						fs.writeFileSync(manifestFile, manifestSource, {encoding:'utf8'})
+						
+						# add manifest file info to args 
+						args.push("-namespace #{namespace} #{manifestFile}")
+						args.push("-include-namespaces #{namespace}")
+						
+						manifestCount++
 
-				args.push('-output ' + @build.wrap(@build.resolvePath(output)))
+					#----------------------------------------------------------------
+					# 4 args, output
+					#----------------------------------------------------------------
+					for arg in @collector.getArgs()
+						args.push(@build.applyEnv(arg))
+	
+					args.push('-output ' + @build.wrap(@build.resolvePath(output)))
 
-				if complete?
-					complete(args.join(' '))
+					complete(args.join(' ')) if complete?
 
 module.exports = Fllib
