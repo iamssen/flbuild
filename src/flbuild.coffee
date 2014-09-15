@@ -98,8 +98,12 @@ class Flbuild
 	#==========================================================================================
 	# utils
 	#==========================================================================================
+	isWindow: () -> process.platform.indexOf('win') is 0
+	
 	wrap: (path) ->
-		"'#{path}'"
+		path = "\"#{path}\""
+		path.replace(/\//g, "\\") if isWindow()
+		return path
 
 	getSwcListFromDirectory: (path) ->
 		swcs = []
