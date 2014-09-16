@@ -1,4 +1,5 @@
 pick = require('file-picker').pick
+exec = require('done-exec')
 {SourceCollector} = require('./flutils')
 
 class Flapp
@@ -73,5 +74,10 @@ class Flapp
 			args.push('-output ' + output)
 
 			complete(args.join(' ')) if complete?
+			
+	build: (source, output, complete) =>
+		@createBuildCommand source, output, (command) ->
+			exec(command).run(complete)
+		
 
 module.exports = Flapp

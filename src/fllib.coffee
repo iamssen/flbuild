@@ -1,5 +1,6 @@
 fs = require('fs')
 async = require('async')
+exec = require('done-exec')
 pick = require('file-picker').pick
 {SourceCollector} = require('./flutils')
 
@@ -115,5 +116,9 @@ class Fllib
 					args.push('-output ' + @build.wrap(@build.resolvePath(output)))
 
 					complete(args.join(' ')) if complete?
+	
+	build: (output, complete) =>
+		@createBuildCommand output, (command) ->
+			exec(command).run(complete)
 
 module.exports = Fllib

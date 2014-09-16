@@ -1,5 +1,6 @@
 $fs = require('fs')
 pick = require('file-picker').pick
+exec = require('done-exec')
 {SourceCollector} = require('./flutils')
 
 class Flmodule
@@ -75,5 +76,9 @@ class Flmodule
 			args.push('-load-externs ' + report) if report?
 
 			complete(args.join(' ')) if complete?
+			
+	build: (report, source, output, complete) =>
+		@createBuildCommand report, source, output, (command) ->
+			exec(command).run(complete)
 
 module.exports = Flmodule
