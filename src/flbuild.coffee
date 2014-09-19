@@ -6,6 +6,7 @@ Fllib = require('./fllib')
 Flapp = require('./flapp')
 Flmodule = require('./flmodule')
 Flasset = require('./flasset')
+Fldoc = require('./fldoc')
 
 class Flbuild
 	constructor: () ->
@@ -94,6 +95,8 @@ class Flbuild
 	getModuleCreator: () => new Flmodule(@)
 
 	getAssetCreator: () => new Flasset(@)
+	
+	getDocCreator: () => new Fldoc(@)
 
 	#==========================================================================================
 	# utils

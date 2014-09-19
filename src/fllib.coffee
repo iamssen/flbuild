@@ -117,7 +117,7 @@ class Fllib
 
 					complete(args.join(' ')) if complete?
 	
-	build: (output, complete) =>
+	create: (output, complete) =>
 		@createBuildCommand output, (command) ->
 			exec(command).run(complete)
 

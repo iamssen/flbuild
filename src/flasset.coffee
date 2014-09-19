@@ -25,11 +25,11 @@ class Flasset
 			directory: directory
 
 	#==========================================================================================
-	# build
+	# create
 	# - swc file
 	# - brochure file { image preview, variable, image size }
 	#==========================================================================================
-	build: (output, complete) =>
+	create: (output, complete) =>
 		cacheDirectory = $path.normalize('.assets_cache')
 		classNameReg = /^[A-Za-z][A-Za-z0-9_]+/;
 		embed = @embed

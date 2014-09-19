@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!---
+EmailForm Component
+
+# This is EmailForm
+
+1. a
+1. b
+1. c
+
+AAAAAA
+
+BBBBBBB
+-->
 <s:HGroup xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" gap="10">
 	<fx:Metadata>
+		/** Submit Event */
 		[Event(name="submit", type="mailer.views.EmailFormEvent")]
 	</fx:Metadata>
 

@@ -77,7 +77,7 @@ class Flmodule
 
 			complete(args.join(' ')) if complete?
 			
-	build: (report, source, output, complete) =>
+	create: (report, source, output, complete) =>
 		@createBuildCommand report, source, output, (command) ->
 			exec(command).run(complete)
 

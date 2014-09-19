@@ -6,4 +6,5 @@ travis:
 
 test-c9:
 	gulp parse-coffee
-	node compile-lib.js
+	node asdoc-compile.js
+	node asdoc-parsexml.js

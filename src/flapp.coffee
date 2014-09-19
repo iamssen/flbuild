@@ -75,7 +75,7 @@ class Flapp
 
 			complete(args.join(' ')) if complete?
 			
-	build: (source, output, complete) =>
+	create: (source, output, complete) =>
 		@createBuildCommand source, output, (command) ->
 			exec(command).run(complete)
 		
