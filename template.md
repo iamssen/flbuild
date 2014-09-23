@@ -28,6 +28,7 @@ build.addArg('-debug=true')
 build.addArg('-optimize=false')
 build.addArg('-static-link-runtime-shared-libraries=true')
 build.addArg('-accessible=true')
+build.addArg('-incremental=true')
 build.addArg('-theme+=src/ChartsNoMergeBugFix.css')
 build.build('$PROJECT_HOME/src/App.mxml', '$PROJECT_HOME/bin-debug/App.swf', function(err) {
 	console.log('build complete')
@@ -64,6 +65,7 @@ build.addArg('-debug=false')
 build.addArg('-optimize=true')
 build.addArg('-static-link-runtime-shared-libraries=true')
 build.addArg('-accessible=true')
+// build.addArg('-incremental=true') 에러 난다
 build.addArg('-theme+=src/ChartsNoMergeBugFix.css')
 build.build('$PROJECT_HOME/src/App.mxml', '$PROJECT_HOME/bin-debug/App.swf', function(err) {
 	console.log('build complete')

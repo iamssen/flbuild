@@ -18,6 +18,8 @@ npm-debug.log
 
 # test
 test
+.asdoc_cache
+asdoc-*.js
 
 # travis
 .travis.yml

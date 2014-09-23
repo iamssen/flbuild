@@ -1,5 +1,6 @@
 pick = require('file-picker').pick
 exec = require('done-exec')
+$path = require('path')
 {SourceCollector} = require('./flutils')
 
 class Flapp
@@ -32,7 +33,7 @@ class Flapp
 		bin = 'mxmlc'
 
 		@build.getSDKVersion (version) =>
-			if process.platform.indexOf('win') is 0
+			if @build.isWindow()
 				if version > '4.6.0'
 					bin = 'mxmlc.bat'
 				else
@@ -43,7 +44,7 @@ class Flapp
 			#----------------------------------------------------------------
 			args = []
 
-			args.push(@build.wrap(@build.getEnv('FLEX_HOME') + '/bin/' + bin))
+			args.push(@build.wrap($path.join(@build.getEnv('FLEX_HOME'), 'bin', bin)))
 
 			args.push(@build.wrap(@build.resolvePath(source)))
 

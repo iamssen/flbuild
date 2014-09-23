@@ -1,4 +1,5 @@
 fs = require('fs')
+$path = require('path')
 async = require('async')
 exec = require('done-exec')
 pick = require('file-picker').pick
@@ -38,7 +39,7 @@ class Fllib
 		bin = 'compc'
 
 		@build.getSDKVersion (version) =>
-			if process.platform.indexOf('win') is 0
+			if @build.isWindow()
 				if version > '4.6.0'
 					bin = 'compc.bat'
 				else
@@ -49,7 +50,7 @@ class Fllib
 			#----------------------------------------------------------------
 			args = []
 
-			args.push(@build.wrap(@build.getEnv('FLEX_HOME') + '/bin/' + bin))
+			args.push(@build.wrap($path.join(@build.getEnv('FLEX_HOME'), 'bin', bin)))
 
 			for library in @collector.getLibraries()
 				args.push('-library-path ' + @build.wrap(library))

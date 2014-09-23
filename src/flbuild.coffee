@@ -2,11 +2,11 @@ $path = require('path')
 $fs = require('fs')
 parseXml = require('xml2js').parseString
 
-Fllib = require('./fllib')
-Flapp = require('./flapp')
-Flmodule = require('./flmodule')
-Flasset = require('./flasset')
-Fldoc = require('./fldoc')
+Fllib = null
+Flapp = null
+Flmodule = null
+Flasset = null
+Fldoc = null
 
 class Flbuild
 	constructor: () ->
@@ -88,15 +88,33 @@ class Flbuild
 	#==========================================================================================
 	# create instance
 	#==========================================================================================
-	getLibraryCreator: () => new Fllib(@)
+	getLibraryCreator: () => 
+		Fllib = require('./fllib') if not Fllib?
+		new Fllib(@)
 
-	getApplicationCreator: () => new Flapp(@)
+	getApplicationCreator: () => 
+		Flapp = require('./flapp') if not Flapp?
+		new Flapp(@)
 
-	getModuleCreator: () => new Flmodule(@)
+	getModuleCreator: () => 
+		Flmodule = require('./flmodule') if not Flmodule?
+		new Flmodule(@)
 
-	getAssetCreator: () => new Flasset(@)
+	getAssetCreator: () => 
+		Flasset = require('./flasset') if not Flasset?
+		new Flasset(@)
 	
-	getDocCreator: () => new Fldoc(@)
+	getDocCreator: () => 
+		if not Fldoc?
+			try 
+				jsdom = require('jsdom')
+				Fldoc = require('./fldoc')
+			catch err
+				console.error(err.message)
+				console.error('Fldoc is need `jsdom` module. install `jsdom` module in your project.')
+				process.exit(err.code)
+		
+		new Fldoc(@)
 
 	#==========================================================================================
 	# utils

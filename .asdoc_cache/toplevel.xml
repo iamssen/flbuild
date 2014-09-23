@@ -1,5 +1,15 @@
 <asdoc>
 
+<interfaceRec name='ITest1' fullname='docSamples:ITest1' sourcefile='/home/ubuntu/workspace/flbuild/test/project/src/docSamples/ITest1.as' namespace='docSamples' access='public' baseClasses='Object' isFinal='false' isDynamic='false' >
+</interfaceRec>
+<interfaceRec name='ITest2' fullname='docSamples:ITest2' sourcefile='/home/ubuntu/workspace/flbuild/test/project/src/docSamples/ITest2.as' namespace='docSamples' access='public' baseClasses='Object' isFinal='false' isDynamic='false' >
+</interfaceRec>
+<classRec name='Test1' fullname='docSamples:Test1' sourcefile='/home/ubuntu/workspace/flbuild/test/project/src/docSamples/Test1.as' namespace='docSamples' access='public' baseclass='Object' interfaces='docSamples:ITest1;docSamples:ITest2' isFinal='false' isDynamic='false' >
+</classRec>
+<field name='testProp' fullname='docSamples:Test1/testProp' type='String' isStatic='false' isConst='false' >
+</field>
+<interfaceRec name='ITest3' fullname='docSamples:ITest3' sourcefile='/home/ubuntu/workspace/flbuild/test/project/src/docSamples/ITest3.as' namespace='docSamples' access='public' baseClasses='flash.events:IEventDispatcher;flash.display:IGraphicsData;docSamples:ITest1' isFinal='false' isDynamic='false' >
+</interfaceRec>
 <classRec name='Email' fullname='mailer.models:Email' sourcefile='/home/ubuntu/workspace/flbuild/test/project/src/mailer/models/Email.as' namespace='mailer.models' access='public' baseclass='Object' interfaces='flash.events:IEventDispatcher' isFinal='false' isDynamic='false' >
 <description><![CDATA[
 Email Address
