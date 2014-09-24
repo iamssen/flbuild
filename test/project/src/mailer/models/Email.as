@@ -1,5 +1,7 @@
 package mailer.models {
 
+import mailer.sample_namespace;
+
 /**
 * Email Address
 * 
@@ -30,6 +32,7 @@ package mailer.models {
 *
 * @throws name.space.TestError error throw
 */
+
 public class Email {
 	/** User name */
 	[Bindable]
@@ -38,6 +41,12 @@ public class Email {
 	/** Email address */
 	[Bindable]
 	public var email:String;
+	
+	internal var internalVariable:String;
+	
+	protected var protectedVariable:String;
+	
+	sample_namespace var nsVariable:String;
 	
 	/**
 	* Test Method

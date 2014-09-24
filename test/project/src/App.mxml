@@ -9,6 +9,8 @@
 
 			[Bindable]
 			private var collection:IList=new ArrayList;
+			
+			public var appProp:String;
 
 			private function submitForm(event:EmailFormEvent):void {
 				collection.addItem(event.email);

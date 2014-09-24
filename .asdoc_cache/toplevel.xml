@@ -109,6 +109,12 @@ sp.addChild(new Shpae);
 </method>
 <field name='_bindingEventDispatcher' fullname='mailer.models:Email/private:_bindingEventDispatcher' type='flash.events:EventDispatcher' isStatic='false' isConst='false' defaultValue='unknown' >
 </field>
+<field name='internalVariable' fullname='mailer.models:Email/mailer.models:internalVariable' type='String' isStatic='false' isConst='false' >
+</field>
+<field name='nsVariable' fullname='mailer.models:Email/sample_namespace:nsVariable' type='String' isStatic='false' isConst='false' >
+</field>
+<field name='protectedVariable' fullname='mailer.models:Email/protected:protectedVariable' type='String' isStatic='false' isConst='false' >
+</field>
 <classRec name='EmailFormEvent' fullname='mailer.views:EmailFormEvent' sourcefile='/home/ubuntu/workspace/flbuild/test/project/src/mailer/views/EmailFormEvent.as' namespace='mailer.views' access='public' baseclass='flash.events:Event' isFinal='false' isDynamic='false' >
 <description><![CDATA[ EmailFormEvent ]]></description>
 </classRec>
@@ -404,6 +410,8 @@ BBBBBBB]]></description>
 <description><![CDATA[
  ]]></description>
 <private><![CDATA[]]></private>
+</field>
+<field name='appProp' fullname='App/appProp' type='String' isStatic='false' isConst='false' >
 </field>
 <field name='collection' fullname='App/private:collection' type='mx.collections:IList' isStatic='false' isConst='false' defaultValue='unknown' >
 <metadata>
