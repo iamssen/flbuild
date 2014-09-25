@@ -7,7 +7,6 @@ exec = require('done-exec')
 xml2js = require('xml2js')
 yaml = require('js-yaml')
 marked = require('marked')
-jsdom = require('jsdom')
 cheerio = require('cheerio')
 request = require('request')
 
@@ -80,11 +79,19 @@ class Fldoc
 			@readNamespaceYaml
 			@readClassYaml
 			@getExternalAsdoc
+			@saveStoreToFile
 			#@printStore
 			#@printFields
 		]
 
 		async.series(tasks, complete)
+
+	#==========================================================================================
+	# @ save
+	#==========================================================================================
+	saveStoreToFile: (callback) =>
+		json = JSON.stringify(@store, null, '\t')
+		$fs.writeFile 'store.json', json, {encoding:'utf8'}, callback
 		
 	#==========================================================================================
 	# @ get external asdoc list
@@ -95,21 +102,21 @@ class Fldoc
 		url.replace(/[^a-zA-Z0-9]/g, '_')
 	
 	getExternalAsdoc: (callback) =>
-		@externalCacheDirectory = $path.normalize(@externalAsdocCacheDirectoryName)
+		externalCacheDirectory = $path.normalize(@externalAsdocCacheDirectoryName)
 
 		# remove cache directory if exists
-		if @removeExternalAsdocCache and $fs.existsSync(@externalCacheDirectory)
-			$fs.removeSync(@externalCacheDirectory)
-		
-		$fs.mkdirSync(@externalCacheDirectory) if not $fs.existsSync(@externalCacheDirectory)
-		
+		if @removeExternalAsdocCache and $fs.existsSync(externalCacheDirectory)
+			$fs.removeSync(externalCacheDirectory)
+
+		# create cache directory
+		if not $fs.existsSync(externalCacheDirectory)
+			$fs.mkdirSync(externalCacheDirectory)
+
 		asdocs = [@adobeAsdoc, @apacheFlexAsdoc]
 		asdocs = asdocs.concat(@externalAsdocs) if @externalAsdocs? and @externalAsdocs.length > 0
 		a2z = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
 		check = /\/$/
-		
-		@jquery ?= $fs.readFileSync('jquery.js', 'utf8')
-		
+
 		reqs = []
 		for asdoc in asdocs
 			if not check.test(asdoc)
@@ -117,7 +124,7 @@ class Fldoc
 				
 			for char in a2z
 				url = "#{asdoc}all-index-#{char}.html"
-				cacheFile = $path.join(@externalCacheDirectory, @convertUrlToCacheName(url) + '.json')
+				cacheFile = $path.join(externalCacheDirectory, @convertUrlToCacheName(url) + '.json')
 				
 				reqs.push
 					cache: cacheFile
@@ -125,44 +132,55 @@ class Fldoc
 					url: url
 		
 		async.eachSeries(reqs, @getExternalAsdocTaskFunction, callback)
-		
+
+	#----------------------------------------------------------------
+	# task function
+	#----------------------------------------------------------------
 	getExternalAsdocTaskFunction: (req, callback) =>
-		store = @store
 		external = @store.external
-		
+
+		# register cache object (a json cache file contents)
 		register = (cache) ->
 			for item in cache
 				fullname = item['fullname']
 				url = item['url']
-				external[fullname] ?= url
-		
+				external[fullname] = url
+
+		#----------------------------------------------------------------
+		# if has cache file
+		#----------------------------------------------------------------
 		if $fs.existsSync(req.cache)
 			$fs.readFile req.cache, {encoding:'utf8'}, (err, data) ->
 				if not err? and data?
 					register(JSON.parse(data))
 					callback()
-		else 
+
+		#----------------------------------------------------------------
+		# if not has cache file
+		#----------------------------------------------------------------
+		else
+			#---------------------------------------------
+			# 0 get asdoc web page
+			#---------------------------------------------
 			request req.url, (err, res, body) ->
 				if err? or res.statusCode isnt 200
 					console.load(err, res.statusCode)
 					callback()
 					return
-				
-				cheerioOptions =
-					normalizeWhitespace: false
-					xmlMode: false
-					decodeEntities: true
-				
-				$ = cheerio.load(body, cheerioOptions)
+
+				#---------------------------------------------
+				# 1 create jquery object
+				#---------------------------------------------
+				$ = cheerio.load(body)
 					
 				classes = {}
 				classMembers = {}
 				classpath = null
 
-				console.log('select jquery .idxrow')
+				#---------------------------------------------
+				# 2 select all <td class="idxrow"/> object
+				#---------------------------------------------
 				nodes = $('td.idxrow')
-				
-				console.log('start jquery each', nodes.length)
 				nodes.each (index) ->
 					href = $(@).children('a').first().attr('href')
 					arr = href.split('#')
@@ -178,32 +196,33 @@ class Fldoc
 						return
 						
 					classpath = html.substring(0, html.length - 5).replace(/\//g, '.').replace(/^\.*/g, '')
-					
+
 					if anchor?
 						classMembers[classpath] ?= {}
 						classMembers[classpath][anchor] = req.asdoc + href
 					else
 						classes[classpath] ?= req.asdoc + href
-				
-				console.log('end each')
-				
+
+				#---------------------------------------------
+				# 3 create a cache object
+				#---------------------------------------------
 				cache = []
 				
 				for classpath, url of classes
 					cache.push
-						fullname: classpath
+						fullname: classpath.replace(/([a-zA-Z0-9\_\.]+)\.([a-zA-Z0-9\_]+)($|\#)/, '$1:$2$3')
 						url: url
 					
 				for classpath, members of classMembers
 					for member, url of members
 						cache.push
-							fullname: "#{classpath}##{member}"
+							fullname: "#{classpath}##{member}".replace(/([a-zA-Z0-9\_\.]+)\.([a-zA-Z0-9\_]+)($|\#)/, '$1:$2$3')
 							url: url
 				
-				console.log('start write')
-				
+				#---------------------------------------------
+				# 4 write to cache.json file and register to @store.external[0]=cache
+				#---------------------------------------------
 				$fs.writeFile req.cache, JSON.stringify(cache), {encoding:'utf8'}, (err) ->
-					console.log('complete save cache', req.cache)
 					register(cache)
 					callback()
 						

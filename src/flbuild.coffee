@@ -104,16 +104,8 @@ class Flbuild
 		Flasset = require('./flasset') if not Flasset?
 		new Flasset(@)
 	
-	getDocCreator: () => 
-		if not Fldoc?
-			try 
-				jsdom = require('jsdom')
-				Fldoc = require('./fldoc')
-			catch err
-				console.error(err.message)
-				console.error('Fldoc is need `jsdom` module. install `jsdom` module in your project.')
-				process.exit(err.code)
-		
+	getDocCreator: () =>
+		Fldoc = require('./fldoc') if not Fldoc?
 		new Fldoc(@)
 
 	#==========================================================================================

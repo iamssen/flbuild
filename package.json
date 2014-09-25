@@ -50,6 +50,7 @@
   },
   "dependencies": {
     "async": "0.9.*",
+    "cheerio": "^0.17.0",
     "done-exec": "0.1.*",
     "file-picker": "*",
     "fs-extra": "0.11.*",

@@ -11,6 +11,7 @@ test/**/*.map
 Gruntfile.js
 Gruntfile.map
 .external_asdoc_cache
+store.json
 
 # npm
 node_modules
