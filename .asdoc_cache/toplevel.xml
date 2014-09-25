@@ -6,6 +6,8 @@
 </interfaceRec>
 <classRec name='Test1' fullname='docSamples:Test1' sourcefile='/home/ubuntu/workspace/flbuild/test/project/src/docSamples/Test1.as' namespace='docSamples' access='public' baseclass='Object' interfaces='docSamples:ITest1;docSamples:ITest2' isFinal='false' isDynamic='false' >
 </classRec>
+<method name='testMethod' fullname='docSamples:Test1/testMethod' isStatic='false' isFinal='false' isOverride='false'  result_type='String'>
+</method>
 <field name='testProp' fullname='docSamples:Test1/testProp' type='String' isStatic='false' isConst='false' >
 </field>
 <interfaceRec name='ITest3' fullname='docSamples:ITest3' sourcefile='/home/ubuntu/workspace/flbuild/test/project/src/docSamples/ITest3.as' namespace='docSamples' access='public' baseClasses='flash.events:IEventDispatcher;flash.display:IGraphicsData;docSamples:ITest1' isFinal='false' isDynamic='false' >

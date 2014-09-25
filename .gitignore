@@ -10,6 +10,7 @@ test/**/*.js
 test/**/*.map
 Gruntfile.js
 Gruntfile.map
+.external_asdoc_cache
 
 # npm
 node_modules

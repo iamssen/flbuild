@@ -7,16 +7,19 @@ exec = require('done-exec')
 xml2js = require('xml2js')
 yaml = require('js-yaml')
 marked = require('marked')
+jsdom = require('jsdom')
+cheerio = require('cheerio')
+request = require('request')
 
 class Fldoc
 	constructor: (@build) ->
 		@collector = new SourceCollector(@build)
-	@externalAsdocs = []
-	@externalFldocs = []
-	@adobeAsdoc = 'http://help.adobe.com/ko_KR/FlashPlatform/reference/actionscript/3/'
-	@apacheFlexAsdoc = 'http://flex.apache.org/asdoc/'
+		@externalAsdocs = []
+		@externalFldocs = []
+		@adobeAsdoc = 'http://help.adobe.com/ko_KR/FlashPlatform/reference/actionscript/3/'
+		@apacheFlexAsdoc = 'http://flex.apache.org/asdoc/'
 
-	# source > externalFldocs > externalAsdocs > apacheFlexAsdoc > adobeAsdoc
+		# source > externalFldocs > externalAsdocs > apacheFlexAsdoc > adobeAsdoc
 
 	#==========================================================================================
 	# setting
@@ -24,6 +27,9 @@ class Fldoc
 	#----------------------------------------------------------------
 	# external document sources
 	#----------------------------------------------------------------
+	refreshExternalAsdocCache: () =>
+		@removeExternalAsdocCache = true
+	
 	setAdobeAsdoc: (url) =>
 		@adobeAsdoc = url
 
@@ -66,16 +72,142 @@ class Fldoc
 			methods: {}
 			properties: {}
 			manifests: {}
+			external: {}
 
 		tasks = [
 			#@createAsdocDataXML
 			@readAsdocDataXML
 			@readNamespaceYaml
 			@readClassYaml
-			@printStore
+			@getExternalAsdoc
+			#@printStore
+			#@printFields
 		]
 
 		async.series(tasks, complete)
+		
+	#==========================================================================================
+	# @ get external asdoc list
+	#==========================================================================================
+	externalAsdocCacheDirectoryName: '.external_asdoc_cache'
+	
+	convertUrlToCacheName: (url) ->
+		url.replace(/[^a-zA-Z0-9]/g, '_')
+	
+	getExternalAsdoc: (callback) =>
+		@externalCacheDirectory = $path.normalize(@externalAsdocCacheDirectoryName)
+
+		# remove cache directory if exists
+		if @removeExternalAsdocCache and $fs.existsSync(@externalCacheDirectory)
+			$fs.removeSync(@externalCacheDirectory)
+		
+		$fs.mkdirSync(@externalCacheDirectory) if not $fs.existsSync(@externalCacheDirectory)
+		
+		asdocs = [@adobeAsdoc, @apacheFlexAsdoc]
+		asdocs = asdocs.concat(@externalAsdocs) if @externalAsdocs? and @externalAsdocs.length > 0
+		a2z = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+		check = /\/$/
+		
+		@jquery ?= $fs.readFileSync('jquery.js', 'utf8')
+		
+		reqs = []
+		for asdoc in asdocs
+			if not check.test(asdoc)
+				asdoc = asdoc + '/' 
+				
+			for char in a2z
+				url = "#{asdoc}all-index-#{char}.html"
+				cacheFile = $path.join(@externalCacheDirectory, @convertUrlToCacheName(url) + '.json')
+				
+				reqs.push
+					cache: cacheFile
+					asdoc: asdoc
+					url: url
+		
+		async.eachSeries(reqs, @getExternalAsdocTaskFunction, callback)
+		
+	getExternalAsdocTaskFunction: (req, callback) =>
+		store = @store
+		external = @store.external
+		
+		register = (cache) ->
+			for item in cache
+				fullname = item['fullname']
+				url = item['url']
+				external[fullname] ?= url
+		
+		if $fs.existsSync(req.cache)
+			$fs.readFile req.cache, {encoding:'utf8'}, (err, data) ->
+				if not err? and data?
+					register(JSON.parse(data))
+					callback()
+		else 
+			request req.url, (err, res, body) ->
+				if err? or res.statusCode isnt 200
+					console.load(err, res.statusCode)
+					callback()
+					return
+				
+				cheerioOptions =
+					normalizeWhitespace: false
+					xmlMode: false
+					decodeEntities: true
+				
+				$ = cheerio.load(body, cheerioOptions)
+					
+				classes = {}
+				classMembers = {}
+				classpath = null
+
+				console.log('select jquery .idxrow')
+				nodes = $('td.idxrow')
+				
+				console.log('start jquery each', nodes.length)
+				nodes.each (index) ->
+					href = $(@).children('a').first().attr('href')
+					arr = href.split('#')
+					html = null
+					anchor = null
+					
+					if arr.length is 2
+						html = arr[0]
+						anchor = arr[1]
+					else if arr.length is 1
+						html = arr[0]
+					else
+						return
+						
+					classpath = html.substring(0, html.length - 5).replace(/\//g, '.').replace(/^\.*/g, '')
+					
+					if anchor?
+						classMembers[classpath] ?= {}
+						classMembers[classpath][anchor] = req.asdoc + href
+					else
+						classes[classpath] ?= req.asdoc + href
+				
+				console.log('end each')
+				
+				cache = []
+				
+				for classpath, url of classes
+					cache.push
+						fullname: classpath
+						url: url
+					
+				for classpath, members of classMembers
+					for member, url of members
+						cache.push
+							fullname: "#{classpath}##{member}"
+							url: url
+				
+				console.log('start write')
+				
+				$fs.writeFile req.cache, JSON.stringify(cache), {encoding:'utf8'}, (err) ->
+					console.log('complete save cache', req.cache)
+					register(cache)
+					callback()
+						
+			
 
 	#==========================================================================================
 	# @ create asdoc xml source
@@ -190,16 +322,16 @@ class Fldoc
 
 			for name, value of source
 				if name is '$' then continue
-				attrs[name] = value
+				attrs[name] = @clearBlank(value)
 
 			attrs['interfaces']=@semicolonStringToArray(attrs['interfaces'])
-			attrs['see']=@convertSee(attrs['see']) if attrs['see']?
 
 			if not store.classes[fullname]?
 				store.classes[fullname] = attrs
 
-			if not store.namespaces[namespace]?
-				store.namespaces[namespace] = {}
+			store.namespaces[namespace] ?= {}
+			store.namespaces[namespace]['classes'] ?= []
+			store.namespaces[namespace]['classes'].push(fullname)
 
 
 	readAsdocInterfaceRec: (list) =>
@@ -228,90 +360,145 @@ class Fldoc
 
 			for name, value of source
 				if name is '$' then continue
-				attrs[name] = value
+				attrs[name] = @clearBlank(value)
 
 			attrs['baseClasses']=@semicolonStringToArray(attrs['baseClasses'])
-			attrs['see']=@convertSee(attrs['see']) if attrs['see']?
 
 			if not store.interfaces[fullname]?
 				store.interfaces[fullname] = attrs
 
-			if not store.namespaces[namespace]?
-				store.namespaces[namespace] = {}
+			store.namespaces[namespace] ?= {}
+			store.namespaces[namespace]['interfaces'] ?= []
+			store.namespaces[namespace]['interfaces'].push(fullname)
+				
 
 	readAsdocMethod: (list) =>
 		store = @store
 		isAccessor = /\/(get|set)$/
-		
+
 		properties = {}
 		methods = []
-		
+
+		#----------------------------------------------------------------
+		# collect accessor properties and methods
+		# ---------------------------------------
+		# properties[fullname]['get'|'set'] = source
+		# methods[fullname] = source
+		#----------------------------------------------------------------
 		for source in list
+			if @isPrivateField(source) then continue
+			
 			attrs = source['$']
 			fullname = attrs['fullname']
-			
+
+			# accessor property
 			if isAccessor.test(fullname)
 				getset = fullname.substring(fullname.length - 3)
 				fullname = fullname.substring(0, fullname.length - 4)
-				
+
 				properties[fullname] ?= {}
-				
+
 				if getset is 'get'
 					properties[fullname]['get'] = source
 				else
 					properties[fullname]['set'] = source
-					
-			else 
+				# method
+			else
 				methods.push(source)
 
+		#----------------------------------------------------------------
+		# process accessor properties
+		#----------------------------------------------------------------
 		for fullname, getset of properties
 			attrs = {}
 			get = getset['get']
 			set = getset['set']
-			
+
 			arr = fullname.split('/')
 			classFullName = arr[0]
 			namespace = if classFullName.indexOf(':') > -1 then classFullName.split(':', 1)[0] else ''
 			{accessor, propertyName} = @splitAccessor(arr[1])
 			fullname = "#{classFullName}##{propertyName}"
-				
+
 			attrs['fullname'] = fullname
 			attrs['accessor'] = if accessor is namespace then 'internal' else accessor
 			attrs['propertyType'] = 'accessor'
 			attrs['isConst'] = false
-			
+
 			if get? and set?
 				attrs['readwrite'] = 'readwrite'
 			else if get?
 				attrs['readwrite'] = 'readonly'
-			else 
+			else
 				attrs['readwrite'] = 'writeonly'
-			
+
 			if get?
 				attrs['name'] = get['$']['name']
 				attrs['type'] = get['$']['result_type']
 				attrs['isStatic'] = get['$']['isStatic']
-					
+
 			else if set?
 				attrs['name'] = set['$']['name']
 				attrs['type'] = set['$']['param_types']
 				attrs['isStatic'] = set['$']['isStatic']
-				
+
 			if get?
 				for name, value of get
 					if name is '$' then continue
-					attrs[name] = value
-					
+					attrs[name] = @clearBlank(value)
+
 			if set?
 				for name, value of set
 					if name is '$' then continue
-					if attrs[name]? and attrs[name] instanceof Array and value instanceof Array
-						attrs[name] = attrs[name].concat(value)
-			
+					attrs[name] = @joinProperties(attrs[name], @clearBlank(value))
+
 			if store.classes[classFullName]?
 				store.properties[fullname] = attrs
 				store.classes[classFullName]['properties'] ?= []
 				store.classes[classFullName]['properties'].push(attrs['name'])
+
+		#----------------------------------------------------------------
+		# process methods
+		#----------------------------------------------------------------
+		for source in methods
+			attrs = source['$']
+			arr = attrs['fullname'].split('/')
+			classFullName = arr[0]
+			namespace = if classFullName.indexOf(':') > -1 then classFullName.split(':', 1)[0] else ''
+			{accessor, propertyName} = @splitAccessor(arr[1])
+			fullname = "#{classFullName}##{propertyName}()"
+			
+			for name, value of source
+				if name is '$' then continue
+				attrs[name] = @clearBlank(value)
+
+			attrs['fullname'] = fullname
+			attrs['assessor'] = if accessor is namespace then 'internal' else accessor
+			
+			if attrs['param_names']?
+				param_names = attrs['param_names'].split(';')
+				param_types = attrs['param_types'].split(';')
+				param_defaults = attrs['param_defaults'].split(';')
+				params = []
+				
+				for i in [0..param_names.length - 1]
+					param = {}
+					param['name'] = param_names[i]
+					param['type'] = param_types[i]
+					param['default'] = param_defaults[i]
+					
+					if attrs['param']? and attrs['param'][i]?
+						param['description'] = attrs['param'][i]
+						
+					params.push(param)
+						
+				attrs['params'] = params
+
+			if store.classes[classFullName]?
+				store.methods[fullname] = attrs
+				store.classes[classFullName]['methods'] ?= []
+				store.classes[classFullName]['methods'].push("#{attrs['name']}()")
+
 
 	readAsdocField: (list) =>
 		store = @store
@@ -335,31 +522,31 @@ class Fldoc
 			namespace = if classFullName.indexOf(':') > -1 then classFullName.split(':', 1)[0] else ''
 			{accessor, propertyName} = @splitAccessor(arr[1])
 			fullname = "#{classFullName}##{propertyName}"
-			
+
 			#console.log(attrs['fullname'], namespace)
 
 			for name, value of source
 				if name is '$' then continue
-				attrs[name] = value
+				attrs[name] = @clearBlank(value)
 
 			attrs['fullname'] = fullname
 			attrs['accessor'] = if accessor is namespace then 'internal' else accessor
-			
+
 			if attrs['isConst'].toString() is 'true'
 				attrs['propertyType'] = 'constant'
 				attrs['readwrite'] = 'readonly'
 			else
 				attrs['propertyType'] = 'variable'
 				attrs['readwrite'] = 'readwrite'
-			
+
 			#console.log(attrs)
 
 			if store.classes[classFullName]?
 				store.properties[fullname] = attrs
 				store.classes[classFullName]['properties'] ?= []
 				store.classes[classFullName]['properties'].push(attrs['name'])
-				
-	
+
+
 	# ns_internal:*
 	# protected:*
 	# private:*
@@ -370,11 +557,11 @@ class Fldoc
 		accessorIndex = name.indexOf(':')
 		if accessorIndex > -1
 			accessor = name.substring(0, accessorIndex)
-			propertyName = name.substring(accessorIndex)
+			propertyName = name.substring(accessorIndex + 1)
 		else
 			accessor = 'public'
 			propertyName = name
-			
+
 		return { accessor : accessor, propertyName : propertyName }
 
 	#==========================================================================================
@@ -382,15 +569,24 @@ class Fldoc
 	#==========================================================================================
 	readClassYaml: (callback) =>
 		store = @store
-		async.eachSeries(store.classes, @readClassYamlTaskFunction, callback)
+		
+		arr = []
+		
+		for name, value of store.classes
+			arr.push(value)
+			
+		for name, vlaue of store.interfaces
+			arr.push(value)
+		
+		async.eachSeries(arr, @readClassYamlTaskFunction, callback)
 
 	#----------------------------------------------------------------
 	# task function
 	#----------------------------------------------------------------
-	readClassYamlTaskFunction: (classInfo, callback) =>
-		sourcefile = classInfo['sourcefile']
+	readClassYamlTaskFunction: (typeInfo, callback) =>
+		sourcefile = typeInfo['sourcefile']
 		yamlPath = sourcefile.replace($path.extname(sourcefile), '.yaml')
-
+		
 		#---------------------------------------------
 		# cancel task if not exists yaml file
 		#---------------------------------------------
@@ -399,8 +595,59 @@ class Fldoc
 			return
 
 		source = yaml.safeLoad($fs.readFileSync(yamlPath, {encoding:'utf8'}))
-
-
+		
+		typeFullName = typeInfo['fullname']
+		
+		methodNameReg = /[a-zA-Z0-9\_]+\(\)/
+		
+		for name, value of source
+			if name is 'class' or name is 'interface'
+				@joinClassYamlClassInfo(typeInfo, value)
+				
+			else if methodNameReg.test(name)
+				methodInfo = @store.methods["#{typeFullName}##{name}"]
+				if methodInfo? then @joinClassYamlMethodInfo(methodInfo, value)
+				
+			else
+				propertyInfo = @store.properties["#{typeFullName}##{name}"]
+				if propertyInfo? then @joinClassYamlFieldInfo(propertyInfo, value)
+		
+		callback()
+		
+		
+	joinClassYamlClassInfo: (origin, source) =>
+		avalableProperties = 
+			description: true
+			see: true
+			throws: true
+			includeExample: true
+		
+		@joinInfo(origin, source, avalableProperties)
+		
+	joinClassYamlFieldInfo: (origin, source) =>
+		avalableProperties = 
+			description: true
+			see: true
+			throws: true
+			includeExample: true
+		
+		@joinInfo(origin, source, avalableProperties)
+		
+	joinClassYamlMethodInfo: (origin, source) =>
+		avalableProperties = 
+			description: true
+			see: true
+			throws: true
+			includeExample: true
+			'return': true
+		
+		@joinInfo(origin, source, avalableProperties)
+		
+	joinInfo: (origin, source, avalableProperties) =>
+		for name, value of source
+			if avalableProperties[name] is true
+				origin[name] = @joinProperties(origin[name], @clearBlank(source[name]), true)
+		
 
 	#==========================================================================================
 	# @ read namespace.yaml
@@ -473,14 +720,13 @@ class Fldoc
 			manifest['components'] ?= []
 
 			for component in source['components']
-				manifest['components'].push(component)
+				manifest['components'].push(@clearBlank(component))
 
 		#---------------------------------------------
 		# save namespace.yaml values to namespace info
 		# store.namespaces['name.space'][name] = value
 		#---------------------------------------------
-		for name, value of source
-			values[name] = value
+		values['description'] = @joinProperties(values['description'], source['description'])
 
 		#---------------------------------------------
 		# end task
@@ -496,24 +742,22 @@ class Fldoc
 	isPrivateField: (source) ->
 		return source['$']['fullname'].indexOf('/private:') > -1 or source['private']?
 
-	convertSee: (list) =>
-		if not list? or list.length is 0
-			return []
-
-		cleared = []
-
-		for see in list
-			see = @clearBlank(see)
-			cleared.push(see)
-
-		return cleared
-
 	#----------------------------------------------------------------
 	# basic utils
 	#----------------------------------------------------------------
 	# remove all front and back space character of string
-	clearBlank: (str) ->
-		return str.replace(/^\s*|\s*$/g, '')
+	clearBlank: (obj) ->
+		regexp = /^\s*|\s*$/g
+		
+		if typeof obj is 'string'
+			return obj.replace(regexp, '')
+			
+		else if obj instanceof Array and obj.length > 0
+			for i in [0..obj.length-1]
+				if typeof obj[i] is 'string'
+					obj[i] = obj[i].replace(regexp, '')
+					
+		return obj
 
 	# name.space:Class1;name.space.Class2 --> [name.space.Class1, name.space.Class2]
 	semicolonStringToArray: (str) ->
@@ -522,18 +766,33 @@ class Fldoc
 		else
 			''
 
+	joinProperties: (primary, secondary, overrideToSecondary = false) ->
+		if primary? and secondary? and primary instanceof Array
+			if secondary instanceof Array
+				return primary.concat(secondary)
+			else
+				primary.push(secondary)
+				return primary
+		else if primary? and secondary?
+			return if overrideToSecondary then secondary else primary
+		else if not primary? and secondary?
+			return secondary
+		else
+			return primary
+
 	#==========================================================================================
 	# debug : trace store object
 	#==========================================================================================
 	printStore: () =>
 		store = @store
+		
 		interfaces = store.interfaces
 		classes = store.classes
 		namespaces = store.namespaces
 		methods = store.methods
 		properties = store.properties
 		manifests = store.manifests
-
+	
 		console.log('==================== : namespaces')
 		for name, value of namespaces
 			console.log('------------ :', name)
@@ -563,7 +822,40 @@ class Fldoc
 		for name, value of manifests
 			console.log('------------ :', name)
 			console.log(value)
-
+			
+	
+		
+	printFields : () =>
+		store = @store
+		
+		print = (collection) ->
+			fields = {}
+			
+			for collectionName, collectionValue of collection
+				for name, value of collectionValue
+					fields[name] = typeof value if not fields[name]?
+					
+			for name, value of fields
+				console.log(name, ':', value)
+				
+		console.log('==================== : field infos')
+		console.log('----------- : namespace fields')
+		print(store.namespaces)
+		
+		console.log('----------- : interface fields')
+		print(store.interfaces)
+		
+		console.log('----------- : class fields')
+		print(store.classes)
+		
+		console.log('----------- : method fields')
+		print(store.methods)
+		
+		console.log('----------- : property fields')
+		print(store.properties)
+		
+		console.log('----------- : manifest fields')
+		print(store.manifests)
 
 # complete = `function(error, dic)`
 # dic[name.space.Class]	[property]		= http://~/name/space/Class.html#property

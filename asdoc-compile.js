@@ -1,3 +1,5 @@
+require('source-map-support')
+
 var Flbuild = require('./libs/flbuild')
     , SourceCollector = require('./libs/flutils')['SourceCollector']
     , exec = require('done-exec')

@@ -6,3 +6,22 @@ class:
     - b
     - c
     
+testProp:
+  description: |
+    Test Property
+    
+    1. a
+    1. b
+    1. c
+    
+    hello world
+    
+    ```html
+    <p>code</p>
+    ```
+
+testMethod():
+  description: |
+    Hello
+    
+  return: "hello world string"
