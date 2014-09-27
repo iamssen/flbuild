@@ -52,6 +52,13 @@ json 데이터 구조
 
 - 전체 열기 / 닫기
 - 필터링 (검색하면 전체 열기 상태로 검색된다)
+
+```html
+<navigator>
+	<toggle-button />
+	<textinput id="filter"/>
+</navigator>
+```
 	
 ## list (navigator에 영향을 받는다)
 
@@ -65,6 +72,23 @@ json 데이터 구조
 		- access
 			- public
 			- internal
+
+```html
+<fldoc-list id="list">
+	<fldoc-list-namespace name="name.space">
+		<fldoc-list-class name="name.space:Class" access="public" type="constants">
+			<fldoc-list-property/>
+		</fldoc-list-class>
+		<fldoc-list-class name="name.space:Class" access="internal" type="event"/>
+		<fldoc-list-class name="name.space:Class" access="public"/>
+	</fldoc-list-namespace>
+	<fldoc-list-namespace name="name.space">
+		<fldoc-list-class name="name.space:Class" access="public"/>
+		<fldoc-list-class name="name.space:Class" access="public"/>
+		<fldoc-list-class name="name.space:Class" access="public"/>
+	</fldoc-list-namespace>
+</fldoc-list>
+```
 
 ## content
 

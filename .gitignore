@@ -12,6 +12,8 @@ Gruntfile.js
 Gruntfile.map
 .external_asdoc_cache
 store.json
+test/fldoc.json
+TODO.md
 
 # npm
 node_modules

@@ -17,6 +17,7 @@ class Fldoc
 		@externalFldocs = []
 		@adobeAsdoc = 'http://help.adobe.com/ko_KR/FlashPlatform/reference/actionscript/3/'
 		@apacheFlexAsdoc = 'http://flex.apache.org/asdoc/'
+		@reflowFldoc = 'http://reflow.ssen.name/fldoc/'
 
 		# source > externalFldocs > externalAsdocs > apacheFlexAsdoc > adobeAsdoc
 
@@ -63,8 +64,9 @@ class Fldoc
 	#==========================================================================================
 	# create
 	#==========================================================================================
-	create: (@outputDirectory, complete) =>
+	create: (@output, complete) =>
 		@store =
+			sourceDirectories: []
 			interfaces: {}
 			classes: {}
 			namespaces: {}
@@ -90,8 +92,12 @@ class Fldoc
 	# @ save
 	#==========================================================================================
 	saveStoreToFile: (callback) =>
+		for directory in @collector.getSourceDirectories()
+			directory = directory.replace(/\//g, "\\") if @build.isWindow()
+			@store.sourceDirectories.push(directory)
+		
 		json = JSON.stringify(@store, null, '\t')
-		$fs.writeFile 'store.json', json, {encoding:'utf8'}, callback
+		$fs.writeFile @output, json, {encoding:'utf8'}, callback
 		
 	#==========================================================================================
 	# @ get external asdoc list
