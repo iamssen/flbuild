@@ -1,7 +1,7 @@
 {
   "name": "flbuild",
   "author": "SSen <i@ssen.name>",
-  "version": "0.1.8",
+  "version": "0.2.0",
   "description": "Support build for adobe flash / flex",
   "tags": [
     "flash",
@@ -22,7 +22,7 @@
   "engines": [
     "node >= 0.10"
   ],
-  "main": "./libs/flbuild",
+  "main": "./lib/flbuild",
   "repository": {
     "type": "git",
     "url": "https://github.com/iamssen/flbuild.git"
@@ -39,22 +39,26 @@
     "url": "https://github.com/iamssen/flbuild/issues"
   },
   "devDependencies": {
-    "coffee-script": "1.*",
-    "gulp": "3.8.*",
-    "gulp-coffee": "2.1.*",
-    "gulp-mocha": "1.0.*",
-    "gulp-sourcemaps": "1.1.*",
-    "gulp-util": "3.0.*",
-    "should": "4.0.*",
-    "source-map-support": "0.2.*"
+    "coffee-script": "*",
+    "gulp": "*",
+    "gulp-coffee": "*",
+    "gulp-mocha": "*",
+    "gulp-sequence": "^0.3.2",
+    "gulp-sourcemaps": "*",
+    "gulp-util": "*",
+    "should": "*",
+    "source-map-support": "*"
   },
   "dependencies": {
     "async": "0.9.*",
-    "cheerio": "^0.17.0",
+    "cheerio": "0.*",
     "done-exec": "0.1.*",
     "file-picker": "*",
-    "fs-extra": "0.11.*",
-    "js-yaml": "3.2.*",
+    "fs-extra": "0.*",
+    "gulp-concat": "^2.5.2",
+    "gulp-sourcemaps": "^1.5.2",
+    "gulp-typescript": "^2.6.0",
+    "js-yaml": "3.*",
     "marked": "^0.3.2",
     "request": "^2.44.0",
     "xml2js": "0.4.*"

@@ -1,38 +1,47 @@
 var gulp = require('gulp')
-	, coffee = require('gulp-coffee')
+	, exec = require('done-exec')
+	, concat = require('gulp-concat')
+	, ts = require('gulp-typescript')
 	, sourcemaps = require('gulp-sourcemaps')
-	, gutil = require('gulp-util')
-	, mocha = require('gulp-mocha')
+	, merge = require('merge2')
+	, run = require('gulp-sequence')
 
-require('coffee-script')
+function tsc(file) {
+	return 'tsc --declaration --sourcemap --module commonjs --out lib/' + file + '.js lib/' + file + '.ts'
+}
 
-gulp.task('parse-coffee', function () {
-	gulp.src('./src/*.coffee')
-		.pipe(sourcemaps.init())
-		.pipe(coffee())
-		.pipe(sourcemaps.write())
-		.pipe(gulp.dest('./libs/'))
+gulp.task('tsc', function (done) {
+	exec(tsc('flbuild'))
+		//.add(tsc('Config'))
+		//.add(tsc('Lib'))
+		//.add(tsc('Module'))
+		.run(done)
 })
 
-gulp.task('test-local', function () {
-	return gulp.src('./test/*.js', {read: false})
-		.pipe(mocha({
-				globals: {
-					should: require('should')
-				}
-			}
-		))
+//gulp.task('tsc', function () {
+//	var t = gulp.src('src/*.ts')
+//		.pipe(sourcemaps.init())
+//		.pipe(ts({
+//			declarationFiles: true,
+//			noExternalResolve: true,
+//			sortOutput: true,
+//			module: 'commonjs'
+//		}))
+//
+//	return merge([
+//		t.js.pipe(gulp.dest('lib'))
+//	])
+//
+//	//return t.js
+//	//	.pipe(concat('flbuild.js'))
+//	//	.pipe(sourcemaps.write())
+//	//	.pipe(gulp.dest('lib'))
+//})
+
+gulp.task('copy', function () {
+	gulp.src('src/**/*').pipe(gulp.dest('lib'))
 })
 
-gulp.task('test-without-compile', function () {
-	return gulp.src('./test/methods-*.js', {read: false})
-		.pipe(mocha({
-				globals: {
-					should: require('should')
-				}
-			}
-		))
-})
 
-gulp.task('local', ['parse-coffee', 'test-local'])
-gulp.task('travis', ['parse-coffee', 'test-without-compile'])
+gulp.task('default', run(['copy', 'tsc']))
+gulp.task('travis', run(['tsc']))

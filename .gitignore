@@ -1,5 +1,6 @@
 # ide
 .idea
+*.iml
 .settings
 .actionScriptProperties
 .flexLibProperties
@@ -13,7 +14,10 @@ Gruntfile.map
 .external_asdoc_cache
 store.json
 test/fldoc.json
-TODO.md
+src/**/*.js
+src/**/*.js.map
+.flbuild-cache
+test/bin-debug
 
 # npm
 node_modules
