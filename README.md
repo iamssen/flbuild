@@ -1,191 +1,245 @@
 # Flash / Flex Build Support
-[![Build Status](https://travis-ci.org/iamssen/flbuild.png)](https://travis-ci.org/iamssen/flbuild)
-[![Dependency Status](https://gemnasium.com/iamssen/flbuild.png)](https://gemnasium.com/iamssen/flbuild)
+
+[![Build Status](https://travis-ci.org/iamssen/flbuild.png)](https://travis-ci.org/iamssen/flbuild) [![Dependency Status](https://gemnasium.com/iamssen/flbuild.png)](https://gemnasium.com/iamssen/flbuild)
 
 # Install
 
-	$ npm install flbuild
+```sh
+$ npm install flbuild --save-dev
+```
+
+# Create swc library
+
+```js
+var fl = require('flbuild')
+var exec = require('done-exec')
+
+var config = new fl.Config()
+config.setEnv('FLEX_HOME')
+config.setEnv('PROJECT_HOME', '/project/home')
+config.setEnv('PLAYER_VERSION', '11.9')
+config.addExternalLibraryDirectory('$FLEX_HOME/frameworks/libs/player/$PLAYER_VERSION')
+config.addExternalLibraryDirectory('$FLEX_HOME/frameworks/libs/')
+config.addExternalLibraryDirectory('$FLEX_HOME/frameworks/libs/mx/')
+config.addExternalLibraryDirectory('$FLEX_HOME/frameworks/locale/en_US/')
+config.addLibraryDirectory('$PROJECT_HOME/libs/')
+config.addSourceDirectory('$PROJECT_HOME/src')
+
+var lib = new fl.Lib(config)
+// If you want filter your classes for import to swc.
+// you can do it with using `fl.Lib.filterFunction`
+lib.filterFunction = function (asclass) {
+    return asclass.classpath.indexOf('mailer.') > -1
+}
+
+lib.createBuildCommand('$PROJECT_HOME/bin/lib.swc', function (cmd) {
+    console.log('lib =>', cmd)
+    exec(cmd).run(function () {
+        console.log('<= lib')
+    })
+})
+```
+
+## Write `namespace.yaml`
+
+If you want set custom namespace for your component classes. (like `xmlns:mx` or `xmlns:s`)
+
+You can do it with writing `namespace.yaml`
+
+- src
+	- com
+		- yourdomain
+			- ComponentClass1
+			- ComponentClass2
+			- ComponentClass3
+			- namespace.yaml
+
+Create `namespace.yaml` file in your namespace directory like that.
+
+```yaml
+namespace: "http://yourdomain.com/somens"
+components:
+- ComponentClass1
+- ComponentClass2
+- ComponentClass3
+```
+
+And write namespace and components names.
+
+```xml
+<?xml version="1.0"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         xmlns:somens="http://yourdomain.com/somens">
+    <somens:Component1 />
+    <somens:Component2 />
+    <somens:Component3 />
+</s:Group>
+```
+
+Then you can use your library with custom namespace.
+
+
+# Create application and module swf files
+
+```js
+var fl = require('flbuild')
+var exec = require('done-exec')
+
+var config = new fl.Config()
+config.setEnv('FLEX_HOME')
+config.setEnv('PROJECT_HOME', '/project/home')
+config.setEnv('PLAYER_VERSION', '11.9')
+config.addExternalLibraryDirectory('$FLEX_HOME/frameworks/libs/player/$PLAYER_VERSION')
+config.addLibraryDirectory('$FLEX_HOME/frameworks/libs/')
+config.addLibraryDirectory('$FLEX_HOME/frameworks/libs/mx/')
+config.addLibraryDirectory('$FLEX_HOME/frameworks/locale/en_US/')
+config.addLibraryDirectory('$PROJECT_HOME/libs/')
+config.addSourceDirectory('$PROJECT_HOME/src')
+
+var app = new fl.App(config)
+app.addArg('-debug=false')
+app.addArg('-compress=true')
+app.addArg('-optimize=true')
+app.createBuildCommand('$PROJECT_HOME/src/App.mxml', '$PROJECT_HOME/bin-debug/App.swf', function (cmd) {
+    console.log('app =>', cmd)
+    exec(cmd).run(function () {
+        console.log('<= app')
+    })
+})
+
+var module = new fl.Module(config)
+module.addArg('-debug=false')
+module.addArg('-compress=true')
+module.addArg('-optimize=true')
+module.createBuildCommand('$PROJECT_HOME/bin-debug/App.xml', '$PROJECT_HOME/src/modules/Module.mxml', '$PORJECT_HOME/bin-deubg/modules/Module.swf', function (cmd) {
+    console.log('module =>', cmd)
+    exec(cmd).run(function () {
+        console.log('<= module')
+    })
+})
+```
+
+`fl.App` build command will be make files `App.swf`, `App.xml` and `App.size.xml`.
+
+`App.xml` is report file for module optimization. It can using when create sub module.
+
+
+# If you want create library with swf files
+
+```js
+var fl = require('flbuild')
+var exec = require('done-exec')
+
+var config = new fl.Config()
+config.setEnv('FLEX_HOME')
+config.setEnv('PROJECT_HOME', '/project/home')
+config.setEnv('PLAYER_VERSION', '11.9')
+config.addExternalLibraryDirectory('$FLEX_HOME/frameworks/libs/player/$PLAYER_VERSION')
+config.addLibraryDirectory('$PROJECT_HOME/libs/')
+config.addSourceDirectory('$PROJECT_HOME/src')
+
+var lib = new fl.Lib(config)
+lib.addExternalLibraryDirectory('$FLEX_HOME/frameworks/libs/')
+lib.addExternalLibraryDirectory('$FLEX_HOME/frameworks/libs/mx/')
+lib.addExternalLibraryDirectory('$FLEX_HOME/frameworks/locale/en_US/')
+lib.createBuildCommand('$PROJECT_HOME/bin/lib.swc', function (cmd) {
+    exec(cmd).run()
+})
+
+var app = new fl.App(config)
+app.addLibraryDirectory('$FLEX_HOME/frameworks/libs/')
+app.addLibraryDirectory('$FLEX_HOME/frameworks/libs/mx/')
+app.addLibraryDirectory('$FLEX_HOME/frameworks/locale/en_US/')
+app.createBuildCommand('$PROJECT_HOME/src/App.mxml', '$PROJECT_HOME/bin-debug/App.swf', function (cmd) {
+    exec(cmd).run()
+})
+
+var module = new fl.Module(config)
+module.addLibraryDirectory('$FLEX_HOME/frameworks/libs/')
+module.addLibraryDirectory('$FLEX_HOME/frameworks/libs/mx/')
+module.addLibraryDirectory('$FLEX_HOME/frameworks/locale/en_US/')
+module.createBuildCommand('$PROJECT_HOME/bin-debug/App.xml', '$PROJECT_HOME/src/modules/Module.mxml', '$PORJECT_HOME/bin-deubg/modules/Module.swf', function (cmd) {
+    exec(cmd).run()
+})
+```
+
+If you need create swc library with swf applications. You can set different libraries and args each modules. (because `mxmlc` need import flex libraries. but, `compc` no need flex libraries.)
+
+
+
+# With gulpfile.js
+
+You can make flbuild into one of gulpfile tasks. It is better for your build.
+
+```js
+var gulp = require('gulp')
+var fl = require('flbuild')
+var exec = require('done-exec')
+var run = require('gulp-sequence')
+
+var config = new fl.Config()
+config.setEnv('FLEX_HOME')
+config.setEnv('PROJECT_HOME', '/project/home')
+config.setEnv('PLAYER_VERSION', '11.9')
+config.addExternalLibraryDirectory('$FLEX_HOME/frameworks/libs/player/$PLAYER_VERSION')
+config.addExternalLibraryDirectory('$FLEX_HOME/frameworks/libs/')
+config.addExternalLibraryDirectory('$FLEX_HOME/frameworks/libs/mx/')
+config.addExternalLibraryDirectory('$FLEX_HOME/frameworks/locale/en_US/')
+config.addLibraryDirectory('$PROJECT_HOME/libs/')
+config.addSourceDirectory('$PROJECT_HOME/src')
+
+gulp.task('create-library', function (done) {
+    var lib = new fl.Lib(config)
+    lib.createBuildCommand('$PROJECT_HOME/bin/lib.swc', function (cmd) {
+        exec(cmd).run(done)
+    })
+})
+
+gulp.task('some-task', function () {
+    // task code
+})
+
+gulp.task('default', run(['some-task', 'create-library']))
+```
+
 
 # API
 
-- `class Flbuild`
-	- Path
-		- `void addLibraryDirectory(string path)` Include swc library classes into your swf or swc file
-			- example : `flbuild.addLibraryDirectory('/Users/you/project/libs')`
-		- `void addExternalLibraryDirectory(string path)` Exclude swc library classes into your swf or swc file
-			- example : `flbuild.addExternalLibraryDirectory('/Users/you/project/libs')`
-		- `void addSourceDirectory(string path)` Source directory (src)
-			- example : `fibuild.addSourceDirectory('/Users/you/project/src')`
-	- Compiler auguments
-		- `void addArg(string arg)` Additional argument for mxmlc, compc
-			- example : `flbuild.addArg('-keep-generated-actionscript=true')`
-	- Environment variables
-		- `void setEnv(string name, [string value])`
-			- example : `flbuild.setEnv('FLEX_HOME', '/usr/lib/flex-sdk-4.11.0')`
-			- example : `flbuild.setEnv('FLEX_HOME')` Read from system environment variable `FLEX_HOME`
-	- Creator
-		- `Fllib getLibraryCreator()`
-		- `Flapp getApplicationCreator()`
-		- `Flmodule getModuleCreator()`
-- `class Fllib`
-	- Path
-		- `void addLibraryDirectory(string path)`
-		- `void addExternalLibraryDirectory(string path)`
-		- `void addSourceDirectory(string path)`
-	- Compiler auguments
-		- `void addArg(string arg)`
-	- Filter
-		- `void setFilterFunction(Funciton func)`
-			- example : `fllib.setFilterFunction(function(file){return file.class.indexOf('com.adobe') === 0;})`
-			- param func : `boolean function(object file)`
-				- param file
-					- `int atime` => `1390478490000`
-					- `int ctime` => `1390391922000`
-					- `int mtime` => `1390391755000`
-					- `path` => `/Users/you/project/src/mailer/models/Email.as`
-					- `string base` => `/Users/you/project/src/mailer/models`
-					- `relative_path` => `mailer/models/Email.as`
-					- `relative_base` => `mailer/models`
-					- `realpath` => `/Users/you/project/src/mailer/models/Email.as`
-					- `extension` => `.as`
-					- `string name` => `Email`
-					- `class` => `mailer.models.Email`
-	- Create build command
-		- `void createBuildCommand(string output, function complete)`
-			- example : `fllib.createBuildCommand('/Users/you/project/bin/lib.swc', function(cmd){console.log(cmd);})`
-				- Execute this command then make lib.swc file
-- `class Flapp`
-	- Path
-		- `void addLibraryDirectory(string path)`
-		- `void addExternalLibraryDirectory(string path)`
-		- `void addSourceDirectory(string path)`
-	- Compiler auguments
-		- `void addArg(string arg)`
-	- Create build command
-		- `void createBuildCommand(string source, string output, function complete)`
-			- example : `flapp.createBuildCommand('/Users/you/project/src/App.mxml', '/Users/you/project/bin/app.swf', function(cmd){console.log(cmd);})`
-				- Execute this resulted command(cmd) then make `app.swf` and `app.xml` file
-- `class Flmodule`
-	- Path
-		- `void addLibraryDirectory(string path)`
-		- `void addExternalLibraryDirectory(string path)`
-		- `void addSourceDirectory(string path)`
-	- Compiler auguments
-		- `void addArg(string arg)`
-	- Create build command
-		- `void createBuildCommand(string report, string source, string output, function complete)`
-			- example : `flapp.createBuildCommand('/Users/you/project/bin/app.xml', '/Users/you/project/src/modules/Module.mxml', '/Users/you/project/bin/modules/module.swf', function(cmd){console.log(cmd);})`
-				- Execute this resulted command(cmd) then make `module.swf`
-			- example : `flapp.createBuildCommand(null, '/Users/you/project/src/modules/Module.mxml', '/Users/you/project/bin/modules/module.swf', function(cmd){console.log(cmd);})`
+## class `fl.Config`
+- `constructor(parent?:fl.Config)`
+- `setEnv(name:string, value?:string)` If value is null. Read value from system environment variables.
+- `getEnv(name:string):string`
+- `addLibraryDirectory(path:string)`
+- `addExternalLibraryDirectory(path:string)`
+- `addSourceDirectory(path:string)`
+- `addArg(arg:string)` mxmlc, compc options
+- `getLibraryDirectories():string[]`
+- `getExternalLibraryDirectories():string[]`
+- `getSourceDirectories():string[]`
+- `getArgs():string[]`
 
-# Example : Create swc library
+## class `fl.App extends fl.Config`
+- `constructor(config:fl.Config)`
+- `createBuildCommand(mxmlPath: string, swfPath: string, complete: (command: string) => void)`
 
-### makeLibrary.js
+## class `fl.Module extends fl.Config`
+- `constructor(config:fl.Config)`
+- `createBuildCommand(appReportPath: string, mxmlPath: string, swfPath: string, complete: (command: string) => void)`
 
-	var Flbuild = require('flbuild');
+## class `fl.Lib extends fl.Config`
+- `constructor(config:fl.Config)`
+- `filterFunction: (asclass: fl.ASClass) => boolean`
+- `createBuildCommand(swcPath: string, complete: (command: string) => void)`
 
-	var flbuild = new Flbuild();
-	flbuild.setEnv('FLEX_HOME');
-	flbuild.setEnv('PROJECT_HOME', 'test/project');
-	flbuild.setEnv('PLAYER_VERSION', 11.9);
-	flbuild.addExternalLibraryDirectory('$FLEX_HOME/frameworks/libs/player/$PLAYER_VERSION');
-	flbuild.addLibraryDirectory('$FLEX_HOME/frameworks/libs/');
-	flbuild.addLibraryDirectory('$FLEX_HOME/frameworks/locale/en_US/');
-	flbuild.addSourceDirectory('$PROJECT_HOME/src');
-
-	var fllib = flbuild.getLibraryCreator();
-	fllib.setFilterFunction(function(file) {
-		return file.class.indexOf('mailer.') === 0;
-	)};
-	fllib.createBuildCommand('$PROJECT_HOME/lib.swc', function(cmd) {
-		console.log('fllib ---------------------------------------------------------------');
-		console.log(cmd);
-	});
-
-### use makeLibrary.js
-
-	$ node makeLibrary
-	fllib ---------------------------------------------------------------
-	'/usr/lib/flex-sdk-4.11.0/bin/compc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/advancedgrids.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/apache.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/authoringsupport.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/charts.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/core.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/experimental.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/experimental_mobile.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/flash-integration.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/framework.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/osmf.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/rpc.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/spark.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/spark_dmv.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/sparkskins.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/textLayout.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/advancedgrids_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/airframework_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/airspark_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/apache_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/automation_agent_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/automation_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/charts_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/experimental_mobile_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/experimental_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/flash-integration_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/framework_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/mobilecomponents_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/mx_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/playerglobal_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/rpc_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/spark_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/textLayout_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/tool_air_rb.swc' -external-library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/player/11.9/playerglobal.swc' -source-path '/Users/you/project/src' -include-classes mailer.models.Email mailer.views.EmailForm mailer.views.EmailFormEvent mailer.views.EmailRenderer -locale en_US -output '/Users/you/project/lib.swc'
-
-Copy this command and paste, execute then make lib.swc
-
-
-
-# Example : Create app.swf, app.xml and module.swf
-
-### makeApp.js
-
-	var Flbuild = require('flbuild');
-
-	var flbuild = new Flbuild();
-	flbuild.setEnv('FLEX_HOME');
-	flbuild.setEnv('PROJECT_HOME', 'test/project');
-	flbuild.setEnv('PLAYER_VERSION', 11.9);
-	flbuild.addExternalLibraryDirectory('$FLEX_HOME/frameworks/libs/player/$PLAYER_VERSION');
-	flbuild.addLibraryDirectory('$FLEX_HOME/frameworks/libs/');
-	flbuild.addLibraryDirectory('$FLEX_HOME/frameworks/locale/en_US/');
-	flbuild.addSourceDirectory('$PROJECT_HOME/src');
-
-	var flapp = flbuild.getApplicationCreator();
-	flapp.createBuildCommand('$PROJECT_HOME/src/App.mxml', '$PROJECT_HOME/app.swf', function(cmd) {
-		console.log('flapp ---------------------------------------------------------------');
-		console.log(cmd);
-	});
-
-	var flmodule = flbuild.getModuleCreator();
-	flmodule.createBuildCommand('$PROJECT_HOME/app.xml', 
-								'$PROJECT_HOME/src/modules/Module.mxml', 
-								'$PROJECT_HOME/modules/Module.swf', 
-								function(cmd) {
-		console.log('flmodule ------------------------------------------------------------');
-		console.log(cmd);
-	});
-
-### use makeApp.js
-
-	flapp ---------------------------------------------------------------
-	'/usr/lib/flex-sdk-4.11.0/bin/mxmlc' '/Users/you/project/src/App.mxml' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/advancedgrids.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/apache.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/authoringsupport.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/charts.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/core.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/experimental.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/experimental_mobile.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/flash-integration.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/framework.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/osmf.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/rpc.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/spark.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/spark_dmv.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/sparkskins.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/textLayout.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/advancedgrids_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/airframework_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/airspark_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/apache_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/automation_agent_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/automation_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/charts_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/experimental_mobile_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/experimental_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/flash-integration_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/framework_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/mobilecomponents_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/mx_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/playerglobal_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/rpc_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/spark_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/textLayout_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/tool_air_rb.swc' -external-library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/player/11.9/playerglobal.swc' -source-path '/Users/you/project/src' -locale en_US -link-report '/Users/you/project/app.xml' -output '/Users/you/project/app.swf'
-	flmodule ------------------------------------------------------------
-	'/usr/lib/flex-sdk-4.11.0/bin/mxmlc' '/Users/you/project/src/modules/Module.mxml' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/advancedgrids.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/apache.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/authoringsupport.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/charts.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/core.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/experimental.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/experimental_mobile.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/flash-integration.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/framework.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/osmf.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/rpc.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/spark.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/spark_dmv.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/sparkskins.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/textLayout.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/advancedgrids_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/airframework_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/airspark_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/apache_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/automation_agent_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/automation_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/charts_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/experimental_mobile_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/experimental_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/flash-integration_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/framework_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/mobilecomponents_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/mx_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/playerglobal_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/rpc_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/spark_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/textLayout_rb.swc' -library-path '/usr/lib/flex-sdk-4.11.0/frameworks/locale/en_US/tool_air_rb.swc' -external-library-path '/usr/lib/flex-sdk-4.11.0/frameworks/libs/player/11.9/playerglobal.swc' -source-path '/Users/you/project/src' -locale en_US -output '/Users/you/project/modules/Module.swf' -load-externs '/Users/you/project/app.xml'
-
-
-
-# Tip : Execute command on your script
-
-	var $exec = require('child_process').exec;
-
-	function exec(cmd, callback) {
-		var exe = $exec(cmd);
-		exe.stdout.on('data', function(data) {
-			console.log(data.toString('utf8'));
-		});
-		exe.stderr.on('data', function(data) {
-			console.log(data.toString('utf8'));
-		});
-		exe.on('close', function(code) {
-			callback(code);
-		});
-	}
-
-	var Flbuild = require('flbuild');
-
-	var flbuild = new Flbuild();
-	flbuild.setEnv('FLEX_HOME');
-	flbuild.setEnv('PROJECT_HOME', 'test/project');
-	flbuild.setEnv('PLAYER_VERSION', 11.9);
-	flbuild.addExternalLibraryDirectory('$FLEX_HOME/frameworks/libs/player/$PLAYER_VERSION');
-	flbuild.addLibraryDirectory('$FLEX_HOME/frameworks/libs/');
-	flbuild.addLibraryDirectory('$FLEX_HOME/frameworks/locale/en_US/');
-	flbuild.addSourceDirectory('$PROJECT_HOME/src');
-
-	var fllib = flbuild.getLibraryCreator();
-	fllib.setFilterFunction(function(file) {
-		return file.class.indexOf('mailer.') === 0;
-	)};
-	fllib.createBuildCommand('$PROJECT_HOME/lib.swc', function(cmd) {
-		console.log('fllib ---------------------------------------------------------------');
-		exec(cmd);
-	});
-
-Execute this code direct create lib.swc
+## interface `fl.ASClass`
+- `path:string` = '/project/path/src/your/namespace/Class.as'
+- `relative_path:string` = 'your/namespace/Class.as'
+- `base:string` = '/project/path/src/your/namespace'
+- `relative_base:string` = 'your/namespace'
+- `name:string` = 'Class'
+- `extension:string` = '.as'
+- `atime:number` = 1430095512987 (from `Date.getTime()`)
+- `mtime:number` = 1430095512987
+- `ctime:number` = 1430095512987
+- `classpath:string` = 'your.namespace.Class'

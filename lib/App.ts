@@ -14,36 +14,43 @@ class App extends Config {
 		var bin:string = 'mxmlc'
 
 		this.getSDKVersion(function (version:string) {
-			this.createConfig(function (xml:string) {
-				var args:string[] = []
+			this.createConfig(function (configXmlPath:string) {
+				mxmlPath = Config.wrapPath(this.resolvePath(mxmlPath))
+				swfPath = Config.wrapPath(this.resolvePath(swfPath))
+				configXmlPath = Config.wrapPath(configXmlPath)
+
+				var cmd:string[] = []
+				var f:number
+				var fmax:number
 
 				// mxmlc
 				if (Config.isWindow()) bin = Config.isVersionHigher(version, '4.6.0') ? 'mxmlc.bat' : 'mxmlc.exe'
-				args.push(Config.wrapPath($path.join(this.getEnv('FLEX_HOME'), 'bin', bin)))
+				cmd.push(Config.wrapPath($path.join(this.getEnv('FLEX_HOME'), 'bin', bin)))
 
 				// mxml
-				args.push(Config.wrapPath(this.resolvePath(mxmlPath)))
+				cmd.push(mxmlPath)
 
 				// load-config local
-				args.push(`-load-config+=${Config.wrapPath(xml)}`)
+				cmd.push(`-load-config+=${configXmlPath}`)
 
-				// merge args
-				this.getArgs().forEach(function (arg:string) {
-					args.push(this.applyEnv(arg))
-				}.bind(this))
-
-				swfPath = Config.wrapPath(this.resolvePath(swfPath))
+				// include args
+				var args:string[] = this.getArgs()
+				f = -1
+				fmax = args.length
+				while(++f < fmax) {
+					cmd.push(this.applyEnv(args[f]))
+				}
 
 				// link-report
-				args.push(`-link-report ${swfPath.replace('.swf', '.xml')}`)
+				cmd.push(`-link-report ${swfPath.replace('.swf', '.xml')}`)
 
 				// size-report
-				args.push(`-size-report ${swfPath.replace('.swf', '.size.xml')}`)
+				cmd.push(`-size-report ${swfPath.replace('.swf', '.size.xml')}`)
 
 				// swf
-				args.push(`-output ${swfPath}`)
+				cmd.push(`-output ${swfPath}`)
 
-				complete(args.join(' '))
+				complete(cmd.join(' '))
 			}.bind(this))
 		}.bind(this))
 	}

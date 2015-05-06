@@ -2,7 +2,7 @@
   "name": "flbuild",
   "author": "SSen <i@ssen.name>",
   "version": "0.2.0",
-  "description": "Support build for adobe flash / flex",
+  "description": "Build Adobe Flash and Flex",
   "tags": [
     "flash",
     "flex",
@@ -39,28 +39,16 @@
     "url": "https://github.com/iamssen/flbuild/issues"
   },
   "devDependencies": {
-    "coffee-script": "*",
+    "done-exec": "0.1.*",
     "gulp": "*",
-    "gulp-coffee": "*",
-    "gulp-mocha": "*",
-    "gulp-sequence": "^0.3.2",
-    "gulp-sourcemaps": "*",
-    "gulp-util": "*",
-    "should": "*",
-    "source-map-support": "*"
+    "gulp-clean": "^0.3.1",
+    "gulp-sequence": "*",
+    "gulp-util": "*"
   },
   "dependencies": {
-    "async": "0.9.*",
-    "cheerio": "0.*",
-    "done-exec": "0.1.*",
     "file-picker": "*",
-    "fs-extra": "0.*",
-    "gulp-concat": "^2.5.2",
-    "gulp-sourcemaps": "^1.5.2",
-    "gulp-typescript": "^2.6.0",
     "js-yaml": "3.*",
-    "marked": "^0.3.2",
-    "request": "^2.44.0",
+    "moment": "^2.10.2",
     "xml2js": "0.4.*"
   }
 }

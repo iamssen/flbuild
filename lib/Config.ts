@@ -4,6 +4,7 @@ import picker = require('file-picker')
 import $path = require('path')
 import $fs = require('fs')
 import xml2js = require('xml2js')
+import moment = require('moment')
 
 class Config {
 	private systemEnvironments:{[name:string]:string}
@@ -12,6 +13,7 @@ class Config {
 	private sourceDirectories:string[]
 	private args:string[]
 	private sdkDescription:string
+	private configXml:string
 
 	constructor(private parent?:Config) {
 		this.systemEnvironments = {}
@@ -21,6 +23,26 @@ class Config {
 		this.args = []
 	}
 
+	//----------------------------------------------------------------
+	// Config xml
+	//----------------------------------------------------------------
+	public setConfigXml(path:string) {
+		this.configXml = path
+	}
+
+	public getConfigXml():string {
+		if (this.configXml) {
+			return this.resolvePath(this.configXml)
+		} else if (this.parent) {
+			return this.parent.getConfigXml()
+		} else {
+			return $path.join(this.getEnv('FLEX_HOME'), 'frameworks', 'flex-config.xml')
+		}
+	}
+
+	//----------------------------------------------------------------
+	// Path and args
+	//----------------------------------------------------------------
 	//---------------------------------------------
 	// setters
 	//---------------------------------------------
@@ -75,9 +97,11 @@ class Config {
 		var libraries:string[] = []
 
 		if (directories && directories.length > 0) {
-			directories.forEach(function (directory:string) {
-				libraries = libraries.concat(Config.getSwcListFromDirectory(directory))
-			}.bind(this))
+			var f:number = -1;
+			var fmax:number = directories.length;
+			while (++f < fmax) {
+				libraries = libraries.concat(Config.getSwcListFromDirectory(directories[f]))
+			}
 		}
 
 		return libraries
@@ -88,9 +112,11 @@ class Config {
 		var libraries:string[] = []
 
 		if (directories && directories.length > 0) {
-			directories.forEach(function (directory:string) {
-				libraries = libraries.concat(Config.getSwcListFromDirectory(directory))
-			}.bind(this))
+			var f:number = -1;
+			var fmax:number = directories.length;
+			while (++f < fmax) {
+				libraries = libraries.concat(Config.getSwcListFromDirectory(directories[f]))
+			}
 		}
 
 		return libraries
@@ -118,7 +144,7 @@ class Config {
 	}
 
 	protected applyEnv(str:string):string {
-		for (var name:string in this.systemEnvironments) {
+		for (var name in this.systemEnvironments) {
 			if (this.systemEnvironments.hasOwnProperty(name)) {
 				var value:any = this.systemEnvironments[name]
 				var reg:RegExp = new RegExp('\\$' + name, 'g')
@@ -154,20 +180,24 @@ class Config {
 	//----------------------------------------------------------------
 	// resolve path control : dependent environment variables control
 	//----------------------------------------------------------------
+	/**
+	 * Convert env strings and relative file path to absolute file path
+	 * @param path File path
+	 * @returns {string} Converted file path
+	 */
 	protected resolvePath(path:string):string {
 		path = this.applyEnv(path)
 		return $path.resolve(path)
 	}
 
+	/** resolvePath() */
 	protected resolvePaths(paths:string[]):string[] {
 		var newPaths:string[] = []
 		var f:number = -1
 		var fmax:number = paths.length
-
 		while (++f < fmax) {
 			newPaths.push(this.resolvePath(paths[f]))
 		}
-
 		return newPaths
 	}
 
@@ -178,12 +208,14 @@ class Config {
 		return process.platform.indexOf('win') === 0
 	}
 
+	/** Convert `path` to `"path"` for execute safty in command line */
 	public static wrapPath(path:string):string {
 		path = Config.fixPath(path)
 		path = `"${path}"`
 		return path
 	}
 
+	/** Convert directory string `/` to `\\` if os is windows */
 	public static fixPath(path:string):string {
 		return Config.isWindow() ? path.replace(/\//g, "\\") : path
 	}
@@ -193,18 +225,26 @@ class Config {
 
 		if ($fs.existsSync(path)) {
 			var files:string[] = $fs.readdirSync(path)
+			var file:string;
+
 			var f:number = -1
 			var fmax:number = files.length
-
 			while (++f < fmax) {
-				var file:string = files[f]
-				if (file.lastIndexOf('.swc') > -1) swcs.push($path.join(path, file))
+				file = files[f];
+				if (file.lastIndexOf('.swc') > -1) {
+					swcs.push($path.join(path, file))
+				}
 			}
 		}
 
 		return swcs
 	}
 
+	public static getTime():string {
+		return moment().format('YYYY.MM.DD.HH.mm.ss')
+	}
+
+	/** Create class path `name.space.Class` from `name/space/Class.as` */
 	public static classfy(file:picker.File):string {
 		var classpath:string = file.relative_base.split('/').join('.') + '.' + file.name
 		if (classpath.charAt(0) === '.') classpath = classpath.substr(1)
@@ -219,9 +259,11 @@ class Config {
 			if (!compiler[category]) compiler[category] = {}
 			if (!compiler[category]['path-element']) compiler[category]['path-element'] = []
 
-			paths.forEach(function (path:string) {
-				compiler[category]['path-element'].push(Config.fixPath(path))
-			})
+			var f:number = -1
+			var fmax:number = paths.length
+			while (++f < fmax) {
+				compiler[category]['path-element'].push(Config.fixPath(paths[f]))
+			}
 		}
 	}
 
@@ -246,7 +288,7 @@ class Config {
 			var cacheDirectory:string = $path.resolve('.flbuild-cache')
 			if (!$fs.existsSync(cacheDirectory)) $fs.mkdirSync(cacheDirectory)
 
-			var xmlFile:string = $path.join(cacheDirectory, `config-${(Math.random() * 1000000)}.xml`)
+			var xmlFile:string = $path.join(cacheDirectory, `config-${Config.getTime()}.xml`)
 
 			$fs.writeFileSync(xmlFile, xml, {encoding: 'utf8'})
 

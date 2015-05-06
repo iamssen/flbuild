@@ -1,25 +1,27 @@
-# ide
+# IDE
+# -----------------------------------------
+# IntelliJ
 .idea
+*.iml
+# Eclipse
+.settings
+.actionScriptProperties
+.flexLibProperties
+.project
 
-# git
-.git
-.gitignore
 
-# coffee
-libs/*.coffee
+# Generated Files
+# -----------------------------------------
+test.compile
 
-# grunt
-Gruntfile.*
-
-# npm
+# NPM
+# -----------------------------------------
 node_modules
 npm-debug.log
-.npmignore
 
-# test
-test
-.asdoc_cache
-asdoc-*.js
-
-# travis
+# Npmignore
+# -----------------------------------------
+src
 .travis.yml
+gulpfile.js
+

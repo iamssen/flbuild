@@ -1,29 +1,23 @@
-# ide
+# IDE
+# -----------------------------------------
+# IntelliJ
 .idea
 *.iml
+# Eclipse
 .settings
 .actionScriptProperties
 .flexLibProperties
 .project
 
-# generated files
-test/**/*.js
-test/**/*.map
-Gruntfile.js
-Gruntfile.map
-.external_asdoc_cache
-store.json
-test/fldoc.json
-src/**/*.js
-src/**/*.js.map
-.flbuild-cache
-test/bin-debug
 
-# npm
+# Generated Files
+# -----------------------------------------
+# test.compile
+test.compile/test.js
+test.compile/bin-debug
+test.compile/.flbuild-cache
+
+# NPM
+# -----------------------------------------
 node_modules
 npm-debug.log
-
-# test result files
-test/project/**/*.swf
-test/project/**/*.swc
-test/project/**/*.xml

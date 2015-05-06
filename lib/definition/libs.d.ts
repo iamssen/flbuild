@@ -37,8 +37,23 @@ declare module 'js-yaml' {
 //==========================================================================================
 // models
 //==========================================================================================
-interface ASClass extends File {
+interface ASClass {
+	realpath:string;
+	path:string;
+	relative_path:string;
+	base:string;
+	relative_base:string;
+	name:string;
+	extension:string;
+	atime:number;
+	mtime:number;
+	ctime:number;
 	classpath:string;
+}
+
+interface Namespace {
+	uri:string
+	manifest:string
 }
 
 interface NamespaceYaml {
