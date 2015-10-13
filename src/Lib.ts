@@ -7,9 +7,9 @@ import xml2js = require('xml2js')
 import $path = require('path')
 import $fs = require('fs')
 
-import Config = require('./Config')
+import {Config} from './Config'
 
-class Lib extends Config {
+export class Lib extends Config {
 	//----------------------------------------------------------------
 	// constructor
 	//----------------------------------------------------------------
@@ -48,8 +48,8 @@ class Lib extends Config {
 				s = -1
 				smax = namespaceYaml.components.length
 
-				while(++s < smax) {
-				    var component:string = namespaceYaml.components[s]
+				while (++s < smax) {
+					var component:string = namespaceYaml.components[s]
 					var component_path:string = `${base_namespace}.${component}`
 
 					if (classPaths.indexOf(component_path) > -1) {
@@ -83,7 +83,7 @@ class Lib extends Config {
 				var asclass:ASClass = <ASClass>file
 				asclass.classpath = Config.classfy(file)
 
-				if (this.filterFunction === null || this.filterFunction(asclass)) {
+				if (!this.filterFunction || this.filterFunction(asclass)) {
 					classPaths.push(asclass.classpath)
 				}
 			}
@@ -189,8 +189,8 @@ class Lib extends Config {
 						// 4-2 : Set flex-config.xml manifest to result config
 						f = -1
 						fmax = nss.length
-						while(++f < fmax) {
-						    ns = nss[f]
+						while (++f < fmax) {
+							ns = nss[f]
 							//console.log('Lib.ts..()', ns)
 
 							var uri:string = ns.uri[0]
@@ -243,7 +243,7 @@ class Lib extends Config {
 				var args:string[] = this.getArgs()
 				f = -1
 				fmax = args.length
-				while(++f < fmax) {
+				while (++f < fmax) {
 					cmd.push(this.applyEnv(args[f]))
 				}
 
@@ -255,5 +255,3 @@ class Lib extends Config {
 		}.bind(this))
 	}
 }
-
-export = Lib

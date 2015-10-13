@@ -1,4 +1,4 @@
-///<reference path="node.d.ts"/>
+///<reference path="../../typings/tsd.d.ts"/>
 
 //==========================================================================================
 // node_modules
@@ -20,19 +20,19 @@ declare module 'file-picker' {
 	export function pick(directory:string|string[], pickTypes:string[], callback:(files:File[], lastModifiedTime?:number) => void)
 }
 
-declare module 'xml2js' {
-	export function parseString(xmlString:string, callback:(error:Error, result:any) => void);
-
-	export class Builder {
-		constructor(opts?:Object);
-
-		buildObject(obj:Object):string;
-	}
-}
-
-declare module 'js-yaml' {
-	export function safeLoad(yamlString:string):any;
-}
+//declare module 'xml2js' {
+//	export function parseString(xmlString:string, callback:(error:Error, result:any) => void);
+//
+//	export class Builder {
+//		constructor(opts?:Object);
+//
+//		buildObject(obj:Object):string;
+//	}
+//}
+//
+//declare module 'js-yaml' {
+//	export function safeLoad(yamlString:string):any;
+//}
 
 //==========================================================================================
 // models

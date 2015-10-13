@@ -1,0 +1,17 @@
+{
+	"compilerOptions": {
+		"target": "es5",
+		"declaration": true,
+		"sourceMap": true,
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"noImplicitAny": false,
+		"removeComments": true,
+		"preserveConstEnums": true,
+		"sourceRoot": "src",
+		"outDir": "lib"
+	},
+	"files": [
+		"src/flbuild.ts"
+	]
+}

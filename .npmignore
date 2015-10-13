@@ -22,6 +22,12 @@ npm-debug.log
 # Npmignore
 # -----------------------------------------
 src
+test
 .travis.yml
-gulpfile.js
+makefile
+tsconfig.json
+tsd.json
 
+# TSD
+# -----------------------------------------
+typings

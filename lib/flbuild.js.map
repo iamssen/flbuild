@@ -1,1 +1,1 @@
-{"version":3,"file":"flbuild.js","sourceRoot":"","sources":["flbuild.ts"],"names":[],"mappings":"AAAA,2CAA2C;AAC3C,6BAA6B;AAC7B,6BAA6B;AAC7B,gCAAgC;AAChC,gCAAgC"}
+{"version":3,"file":"flbuild.js","sourceRoot":"src/","sources":["flbuild.ts"],"names":[],"mappings":";;;AAAA,iBAAc,UACd,CAAC,EADuB;AACxB,iBAAc,OACd,CAAC,EADoB;AACrB,iBAAc,OACd,CAAC,EADoB;AACrB,iBAAc,UAAU,CAAC,EAAD"}

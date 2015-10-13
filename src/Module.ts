@@ -3,9 +3,9 @@
 import $path = require('path')
 import $fs = require('fs')
 
-import Config = require('./Config')
+import {Config} from './Config'
 
-class Module extends Config {
+export class Module extends Config {
 	constructor(config:Config) {
 		super(config)
 	}
@@ -61,5 +61,3 @@ class Module extends Config {
 		}.bind(this))
 	}
 }
-
-export = Module

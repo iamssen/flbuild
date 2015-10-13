@@ -1,7 +1,7 @@
 {
   "name": "flbuild",
   "author": "SSen <i@ssen.name>",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Build Adobe Flash and Flex",
   "tags": [
     "flash",
@@ -20,7 +20,7 @@
     }
   ],
   "engines": [
-    "node >= 0.10"
+    "node >= 0.12"
   ],
   "main": "./lib/flbuild",
   "repository": {
@@ -28,7 +28,7 @@
     "url": "https://github.com/iamssen/flbuild.git"
   },
   "scripts": {
-    "test": "gulp travis"
+    "test": "make travis"
   },
   "config": {
     "travis-cov": {
@@ -38,17 +38,10 @@
   "bugs": {
     "url": "https://github.com/iamssen/flbuild/issues"
   },
-  "devDependencies": {
-    "done-exec": "0.1.*",
-    "gulp": "*",
-    "gulp-clean": "^0.3.1",
-    "gulp-sequence": "*",
-    "gulp-util": "*"
-  },
   "dependencies": {
     "file-picker": "*",
     "js-yaml": "3.*",
-    "moment": "^2.10.2",
+    "moment": "2.*",
     "xml2js": "0.4.*"
   }
 }

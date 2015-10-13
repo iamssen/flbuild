@@ -1,6 +1,6 @@
-/// <reference path="definition/libs.d.ts" />
-import picker = require('file-picker');
-declare class Config {
+/// <reference path="../src/definition/libs.d.ts" />
+import * as picker from 'file-picker';
+export declare class Config {
     private parent;
     private systemEnvironments;
     private libraryDirectories;
@@ -28,25 +28,15 @@ declare class Config {
     protected applyEnv(str: string): string;
     protected getSDKVersion(done: (string) => void): void;
     static isVersionHigher(version1: string, version2: string): boolean;
-    /**
-     * Convert env strings and relative file path to absolute file path
-     * @param path File path
-     * @returns {string} Converted file path
-     */
     protected resolvePath(path: string): string;
-    /** resolvePath() */
     protected resolvePaths(paths: string[]): string[];
     static isWindow(): boolean;
-    /** Convert `path` to `"path"` for execute safty in command line */
     static wrapPath(path: string): string;
-    /** Convert directory string `/` to `\\` if os is windows */
     static fixPath(path: string): string;
     static getSwcListFromDirectory(path: string): string[];
     static getTime(): string;
-    /** Create class path `name.space.Class` from `name/space/Class.as` */
     static classfy(file: picker.File): string;
     private static addPaths(compiler, category, paths);
     protected getConfig(complete: (config: Object) => void): void;
     createConfig(complete: (xmlFile: string) => void): void;
 }
-export = Config;

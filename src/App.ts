@@ -1,11 +1,11 @@
 ///<reference path="./definition/libs.d.ts"/>
 
-import $path = require('path')
-import $fs = require('fs')
+import * as $path from 'path'
+import * as $fs from 'fs'
 
-import Config = require('./Config')
+import {Config} from './Config'
 
-class App extends Config {
+export class App extends Config {
 	constructor(config:Config) {
 		super(config)
 	}
@@ -37,7 +37,7 @@ class App extends Config {
 				var args:string[] = this.getArgs()
 				f = -1
 				fmax = args.length
-				while(++f < fmax) {
+				while (++f < fmax) {
 					cmd.push(this.applyEnv(args[f]))
 				}
 
@@ -55,5 +55,3 @@ class App extends Config {
 		}.bind(this))
 	}
 }
-
-export = App

@@ -1,9 +1,8 @@
 language: node_js
 node_js:
-  - '0.10'
   - '0.12'
 before_script:
-  - npm install -g gulp typescript
+  - npm install -g typescript mocha
 notifications:
   email:
     - i@ssen.name

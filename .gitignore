@@ -21,3 +21,7 @@ test.compile/.flbuild-cache
 # -----------------------------------------
 node_modules
 npm-debug.log
+
+# TSD
+# -----------------------------------------
+typings

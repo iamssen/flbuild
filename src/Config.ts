@@ -1,12 +1,12 @@
 ///<reference path="./definition/libs.d.ts"/>
 
-import picker = require('file-picker')
-import $path = require('path')
-import $fs = require('fs')
-import xml2js = require('xml2js')
-import moment = require('moment')
+import * as picker from 'file-picker'
+import * as $path from 'path'
+import * as $fs from 'fs'
+import * as xml2js from 'xml2js'
+import * as moment from 'moment'
 
-class Config {
+export class Config {
 	private systemEnvironments:{[name:string]:string}
 	private libraryDirectories:string[]
 	private externalLibraryDirectories:string[]
@@ -296,5 +296,3 @@ class Config {
 		}.bind(this))
 	}
 }
-
-export = Config
