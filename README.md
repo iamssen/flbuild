@@ -243,3 +243,12 @@ gulp.task('default', run(['some-task', 'create-library']))
 - `mtime:number` = 1430095512987
 - `ctime:number` = 1430095512987
 - `classpath:string` = 'your.namespace.Class'
+
+
+
+----------
+
+# Archive
+- Js로 옮겨가면서 폐기
+- Node.js `child_process` 기반으로 Flex mxmlc를 Wrapping
+- 대부분의 Flex 작업에서 사용했었음
